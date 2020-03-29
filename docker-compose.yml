@@ -1,0 +1,32 @@
+version: "2"
+services:
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    restart: always
+    volumes:
+    - .:/data
+    container_name: client
+    ports:
+    - 8802:8081
+  operator:
+    build:
+      context: .
+      dockerfile: operator/Dockerfile
+    restart: always
+    volumes:
+    - .:/data
+    container_name: operator
+    ports:
+    - 8801:8081
+  psychologist:
+    build:
+      context: .
+      dockerfile: psychologist/Dockerfile
+    restart: always
+    volumes:
+    - .:/data
+    container_name: psychologist
+    ports:
+    - 8800:8081
