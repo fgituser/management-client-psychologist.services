@@ -10,9 +10,6 @@ db-start: ## start the database server
 		-v $(shell pwd)/testdata/postgres:/var/lib/postgresql/data \
 		-e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=psychologist -d -p 5432:5432 postgres
 
-
-
-
 .PHONY: db-stop
 db-stop: ## stop the database server
 	docker stop postgres
