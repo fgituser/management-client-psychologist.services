@@ -28,6 +28,12 @@ migrate-create-clients:
 migrate-create-schedule:
 	@$(MIGRATE) create -ext sql -dir /migrations schedule
 
+.PHONY: migrate-create-calendar
+migrate-create-calendar:
+	@$(MIGRATE) create -ext sql -dir /migrations calendar
+
+
+
 .PHONY: testdata_add_case
 testdata_add_case: ## populate the database with test data
 	#make migrate-reset
