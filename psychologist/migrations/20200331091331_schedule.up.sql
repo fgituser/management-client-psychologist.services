@@ -17,4 +17,5 @@ CREATE TABLE public.shedule (
 
 -- public.shedule foreign keys
 
+ALTER TABLE public.shedule ADD CONSTRAINT shedule_calendar_id_fkey FOREIGN KEY (calendar_id) REFERENCES calendar(day_id) ON UPDATE RESTRICT ON DELETE RESTRICT;
 ALTER TABLE public.shedule ADD CONSTRAINT shedule_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES employee(id) ON UPDATE RESTRICT ON DELETE RESTRICT;
