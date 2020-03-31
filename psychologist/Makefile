@@ -20,9 +20,13 @@ migrate: ## run all new database migrations
 	@echo "$(APP_DSN)"
 	@$(MIGRATE) up
 
-.PHONY: migrate-create
-migrate-create:
-	@$(MIGRATE) create -ext sql -dir /migrations create_psychologist
+.PHONY: migrate-create-clients
+migrate-create-clients:
+	@$(MIGRATE) create -ext sql -dir /migrations clients
+
+.PHONY: migrate-create-schedule
+migrate-create-schedule:
+	@$(MIGRATE) create -ext sql -dir /migrations schedule
 
 .PHONY: testdata_add_case
 testdata_add_case: ## populate the database with test data
