@@ -32,6 +32,10 @@ migrate-create-schedule:
 migrate-create-calendar:
 	@$(MIGRATE) create -ext sql -dir /migrations calendar
 
+.PHONY: migrate-create-hours
+migrate-create-hours:
+	@$(MIGRATE) create -ext sql -dir /migrations hours
+
 
 
 .PHONY: testdata_add_case
