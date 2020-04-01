@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/employment"
+	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/service/platrorm/pgsql"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/users"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/pkg/database"
 )
@@ -20,4 +21,20 @@ type Service interface {
 type DTB interface {
 	FindClients(db *database.DB, employeeID string) ([]*users.Client, error)
 	FindAppints(db *database.DB, employeeID string) ([]*employment.Employment, error)
+}
+
+// Psychologist ...
+type Psychologist struct {
+	db  *database.DB
+	dtb DTB
+}
+
+//New creates new psychologist application service
+func New(db *database.DB, dtb DTB) *Psychologist {
+	return &Psychologist{db: db, dtb: dtb}
+}
+
+//Initialize initializes psychologist application service with default
+func Initialize(db *database.DB) *Psychologist {
+	return New(db, pgsql.New())
 }
