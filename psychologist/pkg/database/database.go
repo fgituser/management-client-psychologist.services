@@ -1,4 +1,4 @@
-package postgres
+package database
 
 import (
 	"github.com/jmoiron/sqlx"
@@ -7,7 +7,7 @@ import (
 
 // DB ...
 type DB struct {
-	Psql *sqlx.DB
+	SQL *sqlx.DB
 }
 
 // New ...
@@ -17,10 +17,10 @@ func New(psn string, timeout int) (*DB, error) {
 		return nil, err
 	}
 
-	if err := db.Select("", "SELCT 1"); err != nil {
+	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 	return &DB{
-		Psql: db,
+		SQL: db,
 	}, nil
 }
