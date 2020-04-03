@@ -1,0 +1,10 @@
+database:
+  log_queries: true
+  timeout_seconds: 20
+  dsn: postgres://127.0.0.1/psychologist?sslmode=disable&user=postgres&password=postgres
+
+server:
+  port: :8080
+  debug: true
+  read_timeout_seconds: 15
+  write_timeout_seconds: 20

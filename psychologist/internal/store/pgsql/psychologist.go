@@ -3,7 +3,7 @@ package pgsql
 import (
 	"database/sql"
 
-	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/users"
+	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 	"github.com/pkg/errors"
 )
 
@@ -13,7 +13,7 @@ type clients struct {
 }
 
 //FindClients find all clients
-func (s *Store) FindClients(employeeID string) ([]*users.Client, error) {
+func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
 
 	clients := make([]*clients, 0)
 
@@ -24,9 +24,9 @@ func (s *Store) FindClients(employeeID string) ([]*users.Client, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while searching fro clients")
 	}
-	u := make([]*users.Client, 0)
+	u := make([]*model.Client, 0)
 	for _, c := range clients {
-		u = append(u, &users.Client{
+		u = append(u, &model.Client{
 			ID: c.ClientPublicID.String,
 		})
 	}

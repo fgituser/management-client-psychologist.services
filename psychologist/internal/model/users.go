@@ -1,4 +1,4 @@
-package users
+package model
 
 //Client presents client
 type Client struct {

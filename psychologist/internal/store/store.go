@@ -1,10 +1,8 @@
 package store
 
-import (
-	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/users"
-)
+import "github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 
 //Store present store
 type Store interface {
-	FindClients(employeeID string) ([]*users.Client, error)
+	FindClients(employeeID string) ([]*model.Client, error)
 }
