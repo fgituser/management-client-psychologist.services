@@ -24,8 +24,8 @@ func TestPsychologist_FindClients(t *testing.T) {
 		WillReturnRows(rows)
 
 	//mock.ExpectCommit()
-	ps := New()
-	uu, err := ps.FindClients(&database.DB{SQL: sqlxDB}, "11e195fc-7010-4e50-8a4d-1d43e9c8e5db")
+	store := New(&database.DB{SQL: sqlxDB})
+	uu, err := store.FindClients("11e195fc-7010-4e50-8a4d-1d43e9c8e5db")
 	if err != nil {
 		t.Fatal(err)
 	}
