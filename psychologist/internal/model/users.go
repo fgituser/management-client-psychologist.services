@@ -2,8 +2,8 @@ package model
 
 //Client presents client
 type Client struct {
-	ID         string
-	FamilyName string
-	FirstName  string
-	Patronomic string
+	ID         string `json:"id,omitempty"`
+	FamilyName string `json:"family_name,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Patronomic string `json:"patronomic,omitempty"`
 }
