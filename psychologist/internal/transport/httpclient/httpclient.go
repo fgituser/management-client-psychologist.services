@@ -20,6 +20,10 @@ func New(baseURL, userAgent string, client *http.Client) (*HTTPClient, error) {
 		return nil, errors.New("not valid url")
 	}
 
+	if client == nil {
+		return nil, errors.New("an error accurred New httpclient: param client is nil")
+	}
+
 	return &HTTPClient{
 		baseURL:   baseURL,
 		userAgent: userAgent,

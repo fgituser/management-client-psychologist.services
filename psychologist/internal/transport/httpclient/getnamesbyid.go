@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 	"github.com/pkg/errors"
@@ -29,6 +30,11 @@ const (
 
 //GetNamesByID getting client names by identifiers
 func (h *HTTPClient) GetNamesByID(c []*model.Client, employeeID, userRole string) ([]*model.Client, error) {
+	if c == nil || strings.TrimSpace(employeeID) == "" ||
+		employeeID == "" ||
+		strings.TrimSpace(userRole) == "" {
+		return nil, errors.New("an error accured get names by id: bad parametrs")
+	}
 
 	payload, err := encodeGetNamesByIDToRequest(c)
 	if err != nil {

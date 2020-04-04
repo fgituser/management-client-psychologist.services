@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
@@ -101,4 +102,14 @@ func TestRequest(t *testing.T) ([]byte, []*requestGetNamesByID) {
 		t.Fatal(err)
 	}
 	return data, treq
+}
+
+func TestNewHTTPClient(t *testing.T) *HTTPClient {
+	t.Helper()
+
+	return &HTTPClient{
+		baseURL: "http://localhost",
+		userAgent: "go client",
+		client: &http.Client{},
+	}
 }

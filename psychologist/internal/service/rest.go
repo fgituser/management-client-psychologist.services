@@ -84,7 +84,7 @@ func (rs *restserver) checkRole(next http.Handler) http.Handler {
 			return
 		}
 		for _, ur := range rs.userRoles {
-			if ur.name == xrole || ur.isActive {
+			if ur.name == xrole && ur.isActive {
 				next.ServeHTTP(w, r.WithContext(r.Context()))
 				return
 			}
