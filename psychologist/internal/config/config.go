@@ -24,6 +24,7 @@ func Load(path string) (*Configuration, error) {
 type Configuration struct {
 	Server *Server   `yaml:"server,omitempty"`
 	DB     *Database `yaml:"database,omitempty"`
+	URLServices *URLServices `yaml:"url_services"`
 }
 
 // Server holds data for server configuration
@@ -39,4 +40,9 @@ type Database struct {
 	DSN        string `yaml:"dsn,omitempty"`
 	LogQueries bool   `yaml:"log_queries,omitempty"`
 	Timeout    int    `yaml:"timeout_seconds,omitempty"`
+}
+
+//URLServices url address other services
+type URLServices struct {
+	ClientsSvcBaseURL string `yaml:"client_svc_base_url"`
 }

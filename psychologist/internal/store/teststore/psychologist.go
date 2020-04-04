@@ -10,7 +10,7 @@ import (
 //FindClients find all clients
 func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
 	if strings.TrimSpace(employeeID) == "" || employeeID != "75d2cdd6-cf69-44e7-9b28-c47792505d81" {
-		return nil, errors.New("employeeID is empty")
+		return nil, errors.New("employeeID is empty or not valid")
 	}
 	return []*model.Client{
 		{

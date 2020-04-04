@@ -1,9 +1,12 @@
 package service
 
 import (
+	"net/http"
+
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/config"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/store"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/store/pgsql"
+	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/transport/httpclient"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/pkg/database"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/pkg/server"
 	"github.com/pkg/errors"
@@ -17,8 +20,13 @@ func Start(cfg *config.Configuration) error {
 	if err != nil {
 		return errors.Wrap(err, "an error occurred while start api server")
 	}
-	
-	restServer := newRESTServer(router, store)
+
+	tranportClientSvc, err := httpclient.New(cfg.URLServices.ClientsSvcBaseURL, "go client", &http.Client{})
+	if err != nil {
+		return errors.Wrap(err, "an error accured while start api server")
+	}
+
+	restServer := newRESTServer(router, store, tranportClientSvc)
 
 	server.Start(restServer.router, &server.Config{
 		Port:                cfg.Server.Port,

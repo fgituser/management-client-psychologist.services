@@ -21,11 +21,12 @@ type restserver struct {
 	transportClient transport.Transport
 }
 
-func newRESTServer(router chi.Router, str store.Store) *restserver {
+func newRESTServer(router chi.Router, str store.Store, transportClient transport.Transport) *restserver {
 	r := &restserver{
-		router: router,
-		logger: logrus.New(),
-		store:  str,
+		router:          router,
+		logger:          logrus.New(),
+		store:           str,
+		transportClient: transportClient,
 	}
 
 	r.configureRouter()
@@ -44,6 +45,7 @@ func (rs *restserver) configureRouter() {
 	rs.router.Route("/api/v1", func(rapi chi.Router) {
 		rapi.Group(func(remployees chi.Router) {
 			remployees.Use(rs.checkoEmploeeID)
+			remployees.Use(rs.checkRole)
 			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsName)
 		})
 	})
