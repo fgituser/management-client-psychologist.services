@@ -9,20 +9,20 @@ import (
 
 //HTTPClient ...
 type HTTPClient struct {
-	url     string
-	headers map[string]string
-	client  *http.Client
+	baseURL   string
+	userAgent string
+	client    *http.Client
 }
 
 //New return new http client
-func New(url string, headers map[string]string) (*HTTPClient, error) {
-	if strings.TrimSpace(url) == "" {
+func New(baseURL, userAgent string, client *http.Client) (*HTTPClient, error) {
+	if strings.TrimSpace(baseURL) == "" {
 		return nil, errors.New("not valid url")
 	}
 
 	return &HTTPClient{
-		url:     url,
-		headers: headers,
-		client:  &http.Client{},
+		baseURL:   baseURL,
+		userAgent: userAgent,
+		client:    client,
 	}, nil
 }

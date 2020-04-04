@@ -1,16 +1,17 @@
 package httpclient
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 )
 
 //TestClients test cliets
-func TestSearchingClientsByID(t *testing.T) []*model.Client {
+func TestSearchingClientsByID(t *testing.T) ([]byte, []*model.Client) {
 	t.Helper()
 
-	return []*model.Client{
+	clientsID := []*model.Client{
 		{
 			ID: "48faa486-8e73-4c31-b10f-c7f24c115cda",
 		},
@@ -21,9 +22,15 @@ func TestSearchingClientsByID(t *testing.T) []*model.Client {
 			ID: "60faa486-8e73-4c31-b10f-c7f24c115cda",
 		},
 	}
+	data, err := json.Marshal(&clientsID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data, clientsID
 }
 
 func TestClients(t *testing.T) []*model.Client {
+	t.Helper()
 	return []*model.Client{
 		{
 			ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
@@ -47,8 +54,9 @@ func TestClients(t *testing.T) []*model.Client {
 }
 
 //TestResponseGetNamesById test response from GetNamesById
-func TestResponseGetNamesById(t *testing.T) []*responseGetNamesByID {
-	return []*responseGetNamesByID{
+func TestResponseGetNamesById(t *testing.T) ([]byte, []*responseGetNamesByID) {
+	t.Helper()
+	clients := []*responseGetNamesByID{
 		{
 			ClinetID:   "48faa486-8e73-4c31-b10f-c7f24c115cda",
 			FamilyName: "Гусев",
@@ -68,4 +76,29 @@ func TestResponseGetNamesById(t *testing.T) []*responseGetNamesByID {
 			Patronomic: "Федоровна",
 		},
 	}
+	data, err := json.Marshal(&clients)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data, clients
+}
+
+func TestRequest(t *testing.T) ([]byte, []*requestGetNamesByID) {
+	t.Helper()
+	treq := []*requestGetNamesByID{
+		{
+			ClientID: "48faa486-8e73-4c31-b10f-c7f24c115cda",
+		},
+		{
+			ClientID: "50faa486-8e73-4c31-b10f-c7f24c115cda",
+		},
+		{
+			ClientID: "60faa486-8e73-4c31-b10f-c7f24c115cda",
+		},
+	}
+	data, err := json.Marshal(&treq)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data, treq
 }
