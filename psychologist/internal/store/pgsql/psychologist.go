@@ -2,6 +2,7 @@ package pgsql
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 	"github.com/pkg/errors"
@@ -14,6 +15,10 @@ type clients struct {
 
 //FindClients find all clients
 func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
+
+	if strings.TrimSpace(employeeID) == "" {
+		return nil, errors.New("employeeID is empty")
+	}
 
 	clients := make([]*clients, 0)
 

@@ -28,7 +28,7 @@ const (
 )
 
 //GetNamesByID getting client names by identifiers
-func (h *HTTPClient) GetNamesByID(c []*model.Client, psychologistID, userRole string) ([]*model.Client, error) {
+func (h *HTTPClient) GetNamesByID(c []*model.Client, employeeID, userRole string) ([]*model.Client, error) {
 
 	payload, err := encodeGetNamesByIDToRequest(c)
 	if err != nil {
@@ -36,7 +36,7 @@ func (h *HTTPClient) GetNamesByID(c []*model.Client, psychologistID, userRole st
 	}
 
 	res, err := h.Do(payload,
-		fmt.Sprintf("/clients/psychologist/%v/names", psychologistID),
+		fmt.Sprintf("/clients/psychologist/%v/names", employeeID),
 		userRole)
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occured hole get name by id")

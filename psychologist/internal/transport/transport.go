@@ -4,5 +4,5 @@ import "github.com/fgituser/management-client-psychologist.services/psychologist
 
 //Transport represents transport between micro services
 type Transport interface {
-	GetNamesByID(users []*model.Client) ([]*model.Client, error)
+	GetNamesByID(c []*model.Client, employeeID, userRole string) ([]*model.Client, error)
 }
