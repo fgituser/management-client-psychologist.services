@@ -5,4 +5,5 @@ import "github.com/fgituser/management-client-psychologist.services/psychologist
 //Store present store
 type Store interface {
 	FindClients(employeeID string) ([]*model.Client, error)
+	LessonsList(employeeID string) ([]*model.Employment, error)
 }

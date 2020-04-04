@@ -1,9 +1,13 @@
 package model
 
-import "time"
-
 //Employment ...
 type Employment struct {
-	Client *Client
-	Date   time.Time
+	Client  *Client    `json:"client,omitempty"`
+	Shedule []*Shedule `json:"shedule,omitempty"`
+}
+
+//Shedule ...
+type Shedule struct {
+	Date string `json:"date,omitempty"`
+	Time string `json:"time,omitempty"`
 }

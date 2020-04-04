@@ -11,21 +11,21 @@ func TestClients(t *testing.T) []*model.Client {
 	return []*model.Client{
 		{
 			ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Гусев",
-			Name:       "Евгений",
-			Patronomic: "Викторович",
+			// FamilyName: "Гусев",
+			// Name:       "Евгений",
+			// Patronomic: "Викторович",
 		},
 		{
 			ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Шмельцер",
-			Name:       "Вячеслав",
-			Patronomic: "Николаевич",
+			// FamilyName: "Шмельцер",
+			// Name:       "Вячеслав",
+			// Patronomic: "Николаевич",
 		},
 		{
 			ID:         "60faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Виевская",
-			Name:       "Анастасия",
-			Patronomic: "Федоровна",
+			// FamilyName: "Виевская",
+			// Name:       "Анастасия",
+			// Patronomic: "Федоровна",
 		},
 	}
 }

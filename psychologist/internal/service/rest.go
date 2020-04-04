@@ -46,13 +46,29 @@ func (rs *restserver) configureRouter() {
 		rapi.Group(func(remployees chi.Router) {
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
-			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsName)
+			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID)
 		})
 	})
 }
 
-//Get a list of your customer names.
-func (rs *restserver) clientsName(w http.ResponseWriter, r *http.Request) {
+//clientsNameByEmployeeID Get a list of your customer names.
+func (rs *restserver) clientsNameByEmployeeID(w http.ResponseWriter, r *http.Request) {
+	employeeID := chi.URLParam(r, "employee_id")
+	xrole := r.Header.Get("X-User-Role")
+	clientsID, err := rs.store.FindClients(employeeID)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, err)
+		return
+	}
+	clientsIDNames, err := rs.transportClient.GetNamesByID(clientsID, employeeID, xrole)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, err)
+	}
+	render.JSON(w, r, clientsIDNames)
+}
+
+//lessonListByEmployeeID Get a list of your classes: date, client name
+func (rs *restserver) lessonListByEmployeeID(w http.ResponseWriter, r *http.Request) {
 	employeeID := chi.URLParam(r, "employee_id")
 	xrole := r.Header.Get("X-User-Role")
 	clientsID, err := rs.store.FindClients(employeeID)

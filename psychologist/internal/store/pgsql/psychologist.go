@@ -22,7 +22,8 @@ func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
 
 	clients := make([]*clients, 0)
 
-	err := s.db.SQL.Select(&clients, `select client_public_id from clients c
+	err := s.db.SQL.Select(&clients, `
+	select client_public_id from clients c
 		inner join employee e on e.id = c.employee_id
 	where e.employee_public_id = $1`, employeeID)
 
@@ -36,4 +37,58 @@ func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
 		})
 	}
 	return u, nil
+}
+
+type lessonsList struct {
+	ClientPublicID  sql.NullString `db:"client_public_id"`
+	EmploeePublicID sql.NullString `db:"employee_public_id"`
+	CalendarID      sql.NullString `db:"calendar_id"`
+	StartTime       sql.NullString `db:"start_time"`
+}
+
+//LessonsList Get a list of your classes: date, client name
+func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
+	if strings.TrimSpace(employeeID) == "" {
+		return nil, errors.New("employeeID is empty")
+	}
+
+	if strings.TrimSpace(employeeID) == "" {
+		return nil, errors.New("employeeID is empty")
+	}
+
+	allLessons := make([]*lessonsList, 0)
+
+	err := s.db.SQL.Select(&allLessons, `
+	select c.client_public_id, s.calendar_id, h.start_time from employment e 
+		inner join shedule s on s.id  = e.shedule_id
+		inner join clients c on c.id = e.client_id
+		inner join hours h on h.id  = s.hour_id
+		inner join employee em on em.id = s.employee_id 
+	where em.employee_public_id = $1 and e.enabled = true`, employeeID)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "an error occurred while searching fro clients")
+	}
+
+	return lessonsListToEmployment(allLessons), nil
+}
+
+func lessonsListToEmployment(allLessons []*lessonsList) []*model.Employment {
+	e := make([]*model.Employment, 0)
+	for _, a := range allLessons {
+		shedule := make([]*model.Shedule, 0)
+		for _, onelesson := range allLessons {
+			if a.ClientPublicID == onelesson.ClientPublicID {
+				shedule = append(shedule, &model.Shedule{
+					Date: onelesson.CalendarID.String,
+					Time: onelesson.StartTime.String,
+				})
+			}
+			e = append(e, &model.Employment{
+				Client:  &model.Client{ID: a.CalendarID.String},
+				Shedule: shedule,
+			})
+		}
+	}
+	return e
 }
