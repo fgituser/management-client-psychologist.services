@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/store"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/transport"
 	"github.com/go-chi/chi"
@@ -47,6 +48,7 @@ func (rs *restserver) configureRouter() {
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
 			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID)
+			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)
 		})
 	})
 }
@@ -63,6 +65,7 @@ func (rs *restserver) clientsNameByEmployeeID(w http.ResponseWriter, r *http.Req
 	clientsIDNames, err := rs.transportClient.GetNamesByID(clientsID, employeeID, xrole)
 	if err != nil {
 		rs.sendErrorJSON(w, r, 500, err)
+		return
 	}
 	render.JSON(w, r, clientsIDNames)
 }
@@ -71,16 +74,27 @@ func (rs *restserver) clientsNameByEmployeeID(w http.ResponseWriter, r *http.Req
 func (rs *restserver) lessonListByEmployeeID(w http.ResponseWriter, r *http.Request) {
 	employeeID := chi.URLParam(r, "employee_id")
 	xrole := r.Header.Get("X-User-Role")
-	clientsID, err := rs.store.FindClients(employeeID)
+	ll, err := rs.store.LessonsList(employeeID)
 	if err != nil {
 		rs.sendErrorJSON(w, r, 500, err)
 		return
 	}
-	clientsIDNames, err := rs.transportClient.GetNamesByID(clientsID, employeeID, xrole)
+	clientsName, err := rs.transportClient.GetNamesByID(employmentToClientID(ll), employeeID, xrole)
 	if err != nil {
 		rs.sendErrorJSON(w, r, 500, err)
+		return
 	}
-	render.JSON(w, r, clientsIDNames)
+	for _, l := range ll {
+		for _, c := range clientsName {
+			if l.Client.ID == c.ID {
+				l.Client.Name = c.Name
+				l.Client.FamilyName = c.FamilyName
+				l.Client.Patronomic = c.Patronomic
+				continue
+			}
+		}
+	}
+	render.JSON(w, r, ll)
 }
 
 func (rs *restserver) checkoEmploeeID(next http.Handler) http.Handler {
@@ -109,4 +123,12 @@ func (rs *restserver) checkRole(next http.Handler) http.Handler {
 		}
 		rs.sendErrorJSON(w, r, 403, errors.New("not valid X-User-Role"))
 	})
+}
+
+func employmentToClientID(lessons []*model.Employment) []*model.Client {
+	clientsID := make([]*model.Client, 0)
+	for _, l := range lessons {
+		clientsID = append(clientsID, &model.Client{ID: l.Client.ID})
+	}
+	return clientsID
 }
