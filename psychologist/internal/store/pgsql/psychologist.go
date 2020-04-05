@@ -53,14 +53,10 @@ func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
 		return nil, errors.New("employeeID is empty")
 	}
 
-	if strings.TrimSpace(employeeID) == "" {
-		return nil, errors.New("employeeID is empty")
-	}
-
 	allLessons := make([]*lessonsList, 0)
 
 	err := s.db.SQL.Select(&allLessons, `
-	select c.client_public_id, s.calendar_id, h.start_time from employment e 
+select c.client_public_id, s.calendar_id, h.start_time from employment e 
 		inner join shedule s on s.id  = e.shedule_id
 		inner join clients c on c.id = e.client_id
 		inner join hours h on h.id  = s.hour_id
@@ -70,12 +66,31 @@ func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while searching fro clients")
 	}
-	fmt.Println(allLessons[0].CalendarID.Time, " ", allLessons[0].StartTime.Time)
+
 	employment, err := lessonsListToEmployment(allLessons)
 	if err != nil {
 		return nil, errors.Wrap(err, "an error accurred while searching fro clients ")
 	}
 	return employment, nil
+}
+
+//SetLesson Schedule an activity with your client. Recording is possible at any time, including non-working
+func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error {
+	if strings.TrimSpace(employeeID) == "" || strings.TrimSpace(clientID) == "" {
+		return errors.Errorf("an error occured set lesson, empty parametrs employeID:%v clientID:%v", employeeID, clientID)
+	}
+
+	tx := s.db.SQL.MustBegin()
+	tx.MustExec(`
+	insert into employment (client_id, shedule_id)
+	(
+		select c.id client_id, s.id shedule_id from shedule s
+			inner join employee e on e.id = s.employee_id 
+			inner join hours h on h.id = s.hour_id
+			inner join clients c on c.employee_id = s.employee_id 
+		where s.calendar_id = $1 and h.start_time = $2 and e.employee_public_id = $3
+	)`)
+	return nil
 }
 
 //lessonsListToEmployment transformations struct lessonsList on []*model.Employment
@@ -118,4 +133,25 @@ func dateTimeJoiner(d, t sql.NullTime) (time.Time, error) {
 		return time.Time{}, errors.Wrapf(err, "an error accured with dateTimeJoin: date:%v time:%v", sdate, stime)
 	}
 	return dateTime, err
+}
+
+//dateTimeSplitUp slpit up datetime to date and time
+func dateTimeSplitUp(dateTime time.Time) (d, t sql.NullTime, err error) {
+	ldate := "2006-01-02"
+	ltime := "15:04:05"
+
+	sdate := dateTime.Format(ldate)
+	stime := dateTime.Format(ltime)
+
+	dd, err := time.Parse(ldate, sdate)
+	if err != nil {
+		return sql.NullTime{}, sql.NullTime{}, errors.Wrap(err, "an error accurred while split up date")
+	}
+
+	tt, err := time.Parse(ltime, stime)
+	if err != nil {
+		return sql.NullTime{}, sql.NullTime{}, errors.Wrap(err, "an error accurred while split up time")
+	}
+
+	return sql.NullTime{Valid: true, Time: dd}, sql.NullTime{Valid: true, Time: tt}, nil
 }
