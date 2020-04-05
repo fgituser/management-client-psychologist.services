@@ -43,9 +43,8 @@ func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
 
 type lessonsList struct {
 	ClientPublicID sql.NullString `db:"client_public_id"`
-	//EmploeePublicID sql.NullString `db:"employee_public_id"`
-	CalendarID sql.NullTime `db:"calendar_id"`
-	StartTime  sql.NullTime `db:"start_time"`
+	CalendarID     sql.NullTime   `db:"calendar_id"`
+	StartTime      sql.NullTime   `db:"start_time"`
 }
 
 //LessonsList Get a list of your classes: date, client name
