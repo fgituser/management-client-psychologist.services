@@ -2,7 +2,9 @@ package pgsql
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 	"github.com/pkg/errors"
@@ -40,10 +42,10 @@ func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
 }
 
 type lessonsList struct {
-	ClientPublicID  sql.NullString `db:"client_public_id"`
-	EmploeePublicID sql.NullString `db:"employee_public_id"`
-	CalendarID      sql.NullString `db:"calendar_id"`
-	StartTime       sql.NullString `db:"start_time"`
+	ClientPublicID sql.NullString `db:"client_public_id"`
+	//EmploeePublicID sql.NullString `db:"employee_public_id"`
+	CalendarID sql.NullTime `db:"calendar_id"`
+	StartTime  sql.NullTime `db:"start_time"`
 }
 
 //LessonsList Get a list of your classes: date, client name
@@ -69,26 +71,52 @@ func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while searching fro clients")
 	}
-
-	return lessonsListToEmployment(allLessons), nil
+	fmt.Println(allLessons[0].CalendarID.Time, " ", allLessons[0].StartTime.Time)
+	employment, err := lessonsListToEmployment(allLessons)
+	if err != nil {
+		return nil, errors.Wrap(err, "an error accurred while searching fro clients ")
+	}
+	return employment, nil
 }
 
-func lessonsListToEmployment(allLessons []*lessonsList) []*model.Employment {
+//lessonsListToEmployment transformations struct lessonsList on []*model.Employment
+func lessonsListToEmployment(allLessons []*lessonsList) ([]*model.Employment, error) {
 	e := make([]*model.Employment, 0)
 	for _, a := range allLessons {
 		shedule := make([]*model.Shedule, 0)
 		for _, onelesson := range allLessons {
 			if a.ClientPublicID == onelesson.ClientPublicID {
+
+				dateTime, err := dateTimeJoiner(onelesson.CalendarID, onelesson.StartTime)
+				if err != nil {
+					return nil, errors.Wrap(err, "an error accurred while transformations lessonList to Employment")
+				}
+
 				shedule = append(shedule, &model.Shedule{
-					Date: onelesson.CalendarID.String,
-					Time: onelesson.StartTime.String,
+					DateTime: dateTime,
 				})
 			}
 			e = append(e, &model.Employment{
-				Client:  &model.Client{ID: a.CalendarID.String},
+				Client:  &model.Client{ID: a.ClientPublicID.String},
 				Shedule: shedule,
 			})
 		}
 	}
-	return e
+	return e, nil
+}
+
+//dateTimeJoiner date and time connection
+func dateTimeJoiner(d, t sql.NullTime) (time.Time, error) {
+	if !d.Valid || !t.Valid {
+		return time.Time{}, fmt.Errorf("an error accurred while dateTimeJoin, not valid date or time date: %v time %v ", d, t)
+	}
+
+	sdate := d.Time.Format("2006-01-02")
+	stime := t.Time.Format("15:04:05")
+
+	dateTime, err := time.Parse("2006-01-02 15:04:05", fmt.Sprintf("%v %v", sdate, stime))
+	if err != nil {
+		return time.Time{}, errors.Wrapf(err, "an error accured with dateTimeJoin: date:%v time:%v", sdate, stime)
+	}
+	return dateTime, err
 }

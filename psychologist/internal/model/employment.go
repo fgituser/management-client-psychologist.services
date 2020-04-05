@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 //Employment ...
 type Employment struct {
 	Client  *Client    `json:"client,omitempty"`
@@ -8,6 +10,5 @@ type Employment struct {
 
 //Shedule ...
 type Shedule struct {
-	Date string `json:"date,omitempty"`
-	Time string `json:"time,omitempty"`
+	DateTime time.Time `json:"date_time"`
 }
