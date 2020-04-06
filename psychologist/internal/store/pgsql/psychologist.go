@@ -90,7 +90,7 @@ func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error
 		select c.id client_id, s.id shedule_id from shedule s
 			inner join employee e on e.id = s.employee_id 
 			inner join hours h on h.id = s.hour_id
-			inner join clients c on (c.client_public_id  = $1 and c.employee_id = s.employee_id )
+			inner join clients c on (c.client_public_id  = $1 and c.employee_id = s.employee_id ) //TODO: change where
 		where s.calendar_id = $2 and h.start_time = $3 and e.employee_public_id = $4
 	)`, clientID, dateLesson, timeLesson, employeeID)
 
@@ -127,6 +127,40 @@ func (s *Store) CheckClientAttachment(employeeID, clientID string) (bool, error)
 		return false, nil
 	}
 	return true, nil
+}
+
+//LessonIsBusy ...
+func (s *Store) LessonIsBusy(employeeID string, dateTime time.Time) (bool, error) {
+	if strings.TrimSpace(employeeID) == "" {
+		return false, errors.Errorf("an error accured while check lesson free datetime: not valid parametrs employeeID:%v", employeeID)
+	}
+
+	dateLesson, timeLesson, err := datetime.DateTimeSplitUp(&dateTime)
+	if err != nil {
+		return false, errors.Wrap(err, "an error accurred while check lesson is busy: datetime split up")
+	}
+
+	var count sql.NullInt64
+
+	err = s.db.SQL.Get(&count, `
+	select count(e.id) from employment e 
+		inner join shedule s on s.id = e.shedule_id
+		inner join hours h on h.id = s.hour_id
+		inner join employee empl on empl.id = s.employee_id 
+	where empl.employee_public_id = $1' and 
+		h.start_time = $2 and s.calendar_id = $3 and 
+		e.enabled = true `, employeeID, timeLesson, dateLesson)
+
+	if err != nil {
+		return false, errors.Wrap(err, "an error accurrd while chekc lesson is busy: Get")
+	}
+
+	if count.Int64 == 0 {
+		//datetime free
+		return true, nil
+	}
+	//datetime busy
+	return false, nil
 }
 
 //lessonsListToEmployment transformations struct lessonsList on []*model.Employment

@@ -60,3 +60,22 @@ func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error
 	}
 	return nil
 }
+
+//CheckClientAttachment ...
+func (s *Store) CheckClientAttachment(employeeID, clientID string) (bool, error) {
+	if strings.TrimSpace(employeeID) != "75d2cdd6-cf69-44e7-9b28-c47792505d81" ||
+		strings.TrimSpace(clientID) != "48faa486-8e73-4c31-b10f-c7f24c115cda" {
+		return false, errors.Errorf("an error accured check client attachment: not valid parametrs employeeID:%v clientID:%v", employeeID, clientID)
+	}
+
+	return true, nil
+}
+
+//LessonIsBusy ...
+func (s *Store) LessonIsBusy(employeeID string, dateTime time.Time) (bool, error) {
+	if strings.TrimSpace(employeeID) == "" {
+		return false, errors.Errorf("an error accured while check lesson free datetime: not valid parametrs employeeID:%v", employeeID)
+	}
+	//datetime busy
+	return false, nil
+}

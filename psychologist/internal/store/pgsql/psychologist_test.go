@@ -128,3 +128,27 @@ func TestStore_CheckClientAttachment(t *testing.T) {
 	}
 	assert.True(t, isAttachment)
 }
+
+func TestStore_LessonIsBusy(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	rows := sqlmock.NewRows([]string{"count"}).AddRow(sql.NullInt64{Valid: true, Int64: 1})
+	mock.ExpectQuery(`^select count\(e.id\) from employment e`).
+		WithArgs("48faa486-8e73-4c31-b10f-c7f24c115cda",
+			time.Date(0, 1, 1, 13, 0, 0, 0, time.UTC),      //start_time
+			time.Date(2020, 03, 31, 0, 0, 0, 0, time.UTC)). //calendar_id,
+		WillReturnRows(rows)
+
+	store := New(&database.DB{SQL: sqlxDB})
+	isBusy, err := store.LessonIsBusy("48faa486-8e73-4c31-b10f-c7f24c115cda", time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	//check where datetime is busy
+	assert.False(t, isBusy)
+}
