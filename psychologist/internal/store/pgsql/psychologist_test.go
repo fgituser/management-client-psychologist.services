@@ -1,6 +1,7 @@
 package pgsql
 
 import (
+	"database/sql"
 	"testing"
 	"time"
 
@@ -104,4 +105,26 @@ func TestStore_SetLesson(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
+}
+
+func TestStore_CheckClientAttachment(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	rows := sqlmock.NewRows([]string{"count"}).AddRow(sql.NullInt64{Valid: true, Int64: 1})
+	mock.ExpectQuery(`^select count\(c.id\) from clients c`).
+		WithArgs("48faa486-8e73-4c31-b10f-c7f24c115cda", "11e195fc-7010-4e50-8a4d-1d43e9c8e5db").
+		WillReturnRows(rows)
+
+	//mock.ExpectCommit()
+	store := New(&database.DB{SQL: sqlxDB})
+	isAttachment, err := store.CheckClientAttachment("11e195fc-7010-4e50-8a4d-1d43e9c8e5db", "48faa486-8e73-4c31-b10f-c7f24c115cda")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.True(t, isAttachment)
 }

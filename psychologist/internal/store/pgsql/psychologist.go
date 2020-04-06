@@ -105,6 +105,30 @@ func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error
 	return nil
 }
 
+//CheckClientAttachment ...
+func (s *Store) CheckClientAttachment(employeeID, clientID string) (bool, error) {
+	if strings.TrimSpace(employeeID) == "" || strings.TrimSpace(clientID) == "" {
+		return false, errors.Errorf("an error accured check client attachment: not valid parametrs employeeID:%v clientID:%v", employeeID, clientID)
+	}
+
+	var count sql.NullInt64
+
+	err := s.db.SQL.Get(&count, `
+	select count(c.id) from clients c
+	inner join employee e on e.id = c.employee_id
+	where c.client_public_id = $1 and e.employee_public_id = $2`, clientID, employeeID)
+
+	if err != nil {
+		return false, errors.Wrap(err, "an error accurred while check client attachment")
+	}
+
+	if count.Int64 <= 0 {
+		//client not attachment to psychologist
+		return false, nil
+	}
+	return true, nil
+}
+
 //lessonsListToEmployment transformations struct lessonsList on []*model.Employment
 func lessonsListToEmployment(allLessons []*lessonsList) ([]*model.Employment, error) {
 	e := make([]*model.Employment, 0)
