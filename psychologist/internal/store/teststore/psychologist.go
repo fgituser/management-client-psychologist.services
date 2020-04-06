@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
+	"github.com/fgituser/management-client-psychologist.services/psychologist/pkg/datetime"
 	"github.com/pkg/errors"
 )
 
@@ -44,4 +45,18 @@ func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
 			},
 		},
 	}, nil
+}
+
+//SetLesson Schedule an activity with your client. Recording is possible at any time, including non-working
+func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error {
+	if strings.TrimSpace(employeeID) != "75d2cdd6-cf69-44e7-9b28-c47792505d81" ||
+		strings.TrimSpace(clientID) != "48faa486-8e73-4c31-b10f-c7f24c115cda" {
+		return errors.Errorf("an error accurred while set lesson, empty parametrs employeID:%v clientID:%v", employeeID, clientID)
+	}
+
+	_, _, err := datetime.DateTimeSplitUp(&dateTime)
+	if err != nil {
+		return errors.Wrap(err, "an error accurred while set lessons")
+	}
+	return nil
 }

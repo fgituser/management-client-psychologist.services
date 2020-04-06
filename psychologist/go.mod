@@ -1,4 +1,4 @@
-module github.com/fgituser/management-client-psychologist.services
+module github.com/fgituser/management-client-psychologist.services/psychologist
 
 go 1.14
 
