@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -52,7 +53,8 @@ func (rs *restserver) configureRouter() {
 			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)
 			remployees.Group(func(remployed chi.Router) {
 				remployed.Use(rs.checkAttachment)
-				remployed.Post("/employess/{employee_id}/clients/{client_id}/lessons/date_time/{date_time}/set", rs.lessonSet)
+				remployed.Use(rs.lessonIsBusy)
+				remployed.Post("/employees/{employee_id}/clients/{client_id}/lessons/date_time/{date_time}/set", rs.lessonSet)
 			})
 		})
 	})
@@ -60,8 +62,23 @@ func (rs *restserver) configureRouter() {
 
 //Schedule an activity with your client. Recording is possible at any time, including non-working
 func (rs *restserver) lessonSet(w http.ResponseWriter, r *http.Request) {
-	// employeeID := chi.URLParam(r, "employee_id")
-	// xrole := r.Header.Get("X-User-Role")
+	employeeID := chi.URLParam(r, "employee_id")
+	clientID := chi.URLParam(r, "client_id")
+	dateTime, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	lessonDatetime, err := time.Parse("2006-01-02 15:04", dateTime)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	if err := rs.store.SetLesson(employeeID, clientID, lessonDatetime); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, nil)
 }
 
 //clientsNameByEmployeeID Get a list of your customer names.
@@ -130,9 +147,13 @@ func (rs *restserver) checkAttachment(next http.Handler) http.Handler {
 func (rs *restserver) lessonIsBusy(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		employeeID := chi.URLParam(r, "employee_id")
-		dateTime := chi.URLParam(r, "date_time")
+		dateTime, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+		if err != nil {
+			rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+			return
+		}
 
-		dd, err := time.Parse("2006-01-02 15:04:05", dateTime)
+		dd, err := time.Parse("2006-01-02 15:04", dateTime)
 		if err != nil {
 			rs.sendErrorJSON(w, r, 500, ErrInternal, err)
 			return
@@ -168,7 +189,7 @@ func (rs *restserver) checkRole(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		xrole := r.Header.Get("X-User-Role")
 		if strings.TrimSpace(xrole) == "" {
-			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid employee_id"))
+			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
 			return
 		}
 		for _, ur := range rs.userRoles {

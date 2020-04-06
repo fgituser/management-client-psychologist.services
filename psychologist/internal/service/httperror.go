@@ -10,6 +10,11 @@ import (
 	"github.com/go-chi/render"
 )
 
+const (
+	ErrInternal = "Internal Server Error"
+	ErrNoAccess = "No Access"
+)
+
 func (rs *restserver) sendErrorJSON(w http.ResponseWriter, r *http.Request, httpStatusCode int, msg string, err error) {
 	rs.logger.Errorf(errDetailsMsg(r, httpStatusCode, err, msg, httpStatusCode))
 	render.Status(r, httpStatusCode)
