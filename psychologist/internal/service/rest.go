@@ -53,8 +53,8 @@ func (rs *restserver) configureRouter() {
 			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)
 			remployees.Group(func(remployed chi.Router) {
 				remployed.Use(rs.checkAttachment)
-				remployed.Use(rs.lessonIsBusy)
-				remployed.Post("/employees/{employee_id}/clients/{client_id}/lessons/date_time/{date_time}/set", rs.lessonSet)
+				remployed.Use(rs.lessonIsBusy) //TODO: remove middleware to method
+				remployed.Post("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/set", rs.lessonSet)
 			})
 		})
 	})
@@ -69,11 +69,19 @@ func (rs *restserver) lessonSet(w http.ResponseWriter, r *http.Request) {
 		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
 		return
 	}
+
 	lessonDatetime, err := time.Parse("2006-01-02 15:04", dateTime)
 	if err != nil {
 		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
 		return
 	}
+
+
+	if !isTheTime(lessonDatetime) {
+		rs.sendErrorJSON(w, r, 400, "a lesson can only be scheduled at the beginning of the hour", nil)
+		return
+	}
+
 	if err := rs.store.SetLesson(employeeID, clientID, lessonDatetime); err != nil {
 		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
 		return
@@ -208,4 +216,11 @@ func employmentToClientID(lessons []*model.Employment) []*model.Client {
 		clientsID = append(clientsID, &model.Client{ID: l.Client.ID})
 	}
 	return clientsID
+}
+
+func isTheTime(t time.Time) bool {
+	if t.Minute() != 0 {
+		return false
+	}
+	return true
 }

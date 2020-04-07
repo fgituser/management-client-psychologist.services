@@ -60,8 +60,10 @@ select c.client_public_id, s.calendar_id, h.start_time from employment e
 		inner join shedule s on s.id  = e.shedule_id
 		inner join clients c on c.id = e.client_id
 		inner join hours h on h.id  = s.hour_id
-		inner join employee em on em.id = s.employee_id 
-	where em.employee_public_id = $1 and e.enabled = true`, employeeID)
+		inner join employee em on em.id = s.employee_id
+		left join cancellation_employment ce on ce.employment_id = e.id 
+	where em.employee_public_id = $1 and 
+	ce.employment_id is null`, employeeID)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while searching fro clients")
@@ -146,10 +148,11 @@ func (s *Store) LessonIsBusy(employeeID string, dateTime time.Time) (bool, error
 	select count(e.id) from employment e 
 		inner join shedule s on s.id = e.shedule_id
 		inner join hours h on h.id = s.hour_id
-		inner join employee empl on empl.id = s.employee_id 
+		inner join employee empl on empl.id = s.employee_id
+		left join cancellation_employment ce on ce.employment_id = e.id 
 	where empl.employee_public_id = $1' and 
 		h.start_time = $2 and s.calendar_id = $3 and 
-		e.enabled = true `, employeeID, timeLesson, dateLesson)
+		ce.employment_id is null`, employeeID, timeLesson, dateLesson)
 
 	if err != nil {
 		return false, errors.Wrap(err, "an error accurrd while chekc lesson is busy: Get")

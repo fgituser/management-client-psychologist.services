@@ -12,6 +12,6 @@ type Store interface {
 	LessonsList(employeeID string) ([]*model.Employment, error)
 	SetLesson(employeeID, clientID string, dateTime time.Time) error
 	LessonIsBusy(employeeID string, dateTime time.Time) (bool, error)
-	CheckClientAttachment(employeeID, clientID string) (bool, error) //check if the psychologist is attached to the client
-
+	LessonCanceled(employeeID string, dateTime time.Time) error
+	CheckClientAttachment(employeeID, clientID string) (bool, error)
 }
