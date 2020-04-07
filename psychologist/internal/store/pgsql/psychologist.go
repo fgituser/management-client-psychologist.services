@@ -56,7 +56,7 @@ func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
 	allLessons := make([]*lessonsList, 0)
 
 	err := s.db.SQL.Select(&allLessons, `
-select c.client_public_id, s.calendar_id, h.start_time from employment e 
+	select c.client_public_id, s.calendar_id, h.start_time from employment e 
 		inner join shedule s on s.id  = e.shedule_id
 		inner join clients c on c.id = e.client_id
 		inner join hours h on h.id  = s.hour_id
@@ -164,6 +164,41 @@ func (s *Store) LessonIsBusy(employeeID string, dateTime time.Time) (bool, error
 	}
 	//datetime busy
 	return false, nil
+}
+
+//LessonCanceled canceled lesson
+func (s *Store) LessonCanceled(employeeID string, dateTime time.Time) error {
+	if strings.TrimSpace(employeeID) == "" {
+		return errors.Errorf("an error accurred while caneled lesson, empty parametrs employeID:%v", employeeID)
+	}
+	dateLesson, timeLesson, err := datetime.DateTimeSplitUp(&dateTime)
+	if err != nil {
+		return errors.Wrap(err, "an error accurred while canceled lesson")
+	}
+
+	tx := s.db.SQL.MustBegin()
+	_, err = tx.Exec(`
+	insert into cancellation_employment (employment_id)
+	(
+		select e.id from employment e 
+			inner join shedule s on s.id = e.shedule_id
+			inner join hours h on h.id = s.hour_id
+			inner join employee empl on empl.id = s.employee_id
+			left join cancellation_employment ce on ce.employment_id = e.id 
+		where empl.employee_public_id = $1 and 
+			h.start_time = $2 and s.calendar_id = $3 and
+			ce.employment_id is null
+	)`, employeeID, timeLesson, dateLesson)
+
+	if err != nil {
+		return errors.Errorf("an error accurred while caneled lesson, empty parametrs employeID:%v", employeeID)
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return errors.Errorf("an error accurred while caneled lesson, empty parametrs employeID:%v", employeeID)
+	}
+	return nil
 }
 
 //lessonsListToEmployment transformations struct lessonsList on []*model.Employment

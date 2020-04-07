@@ -79,3 +79,15 @@ func (s *Store) LessonIsBusy(employeeID string, dateTime time.Time) (bool, error
 	//datetime busy
 	return false, nil
 }
+
+//LessonCanceled canceled lesson
+func (s *Store) LessonCanceled(employeeID string, dateTime time.Time) error {
+	if strings.TrimSpace(employeeID) == "" {
+		return errors.Errorf("an error accurred while caneled lesson, empty parametrs employeID:%v", employeeID)
+	}
+	_, _, err := datetime.DateTimeSplitUp(&dateTime)
+	if err != nil {
+		return errors.Wrap(err, "an error accurred while canceled lesson")
+	}
+	return nil
+}
