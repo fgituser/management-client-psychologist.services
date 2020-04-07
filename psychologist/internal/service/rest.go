@@ -55,9 +55,55 @@ func (rs *restserver) configureRouter() {
 				remployed.Use(rs.checkAttachment)
 				remployed.Use(rs.lessonIsBusy) //TODO: remove middleware to method
 				remployed.Post("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/set", rs.lessonSet)
+				remployed.Put("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/reschedule/datetime/{new_date_time}/set", rs.lessonReschedule)
 			})
 		})
 	})
+}
+
+//Reschedule your occupation. Transfer is possible at any time, including non-working.
+func (rs *restserver) lessonReschedule(w http.ResponseWriter, r *http.Request) {
+	employeeID := chi.URLParam(r, "employee_id")
+	clientID := chi.URLParam(r, "client_id")
+
+	paramDateTimeOld, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	paramDateTimeNew, err := url.QueryUnescape(chi.URLParam(r, "new_date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetimeOld, err := time.Parse("2006-01-02 15:04", paramDateTimeOld)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetimeNew, err := time.Parse("2006-01-02 15:04", paramDateTimeNew)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	if !isTheTime(lessonDatetimeNew) {
+		rs.sendErrorJSON(w, r, 400, "a lesson can only be scheduled at the beginning of the hour", nil)
+		return
+	}
+
+	if err := rs.store.LessonCanceled(employeeID, lessonDatetimeOld); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	if err := rs.store.SetLesson(employeeID, clientID, lessonDatetimeNew); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, nil)
 }
 
 //Schedule an activity with your client. Recording is possible at any time, including non-working
@@ -75,7 +121,6 @@ func (rs *restserver) lessonSet(w http.ResponseWriter, r *http.Request) {
 		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
 		return
 	}
-
 
 	if !isTheTime(lessonDatetime) {
 		rs.sendErrorJSON(w, r, 400, "a lesson can only be scheduled at the beginning of the hour", nil)

@@ -53,6 +53,19 @@ func Test_restserver_lessonSet(t *testing.T) {
 	assert.EqualValues(t, rr.Code, 200)
 }
 
+func Test_restserver_lessonReschedule(t *testing.T) {
+	rest := testRest(t)
+	req, err := http.NewRequest("PUT", "/api/v1/employees/75d2cdd6-cf69-44e7-9b28-c47792505d81/clients/48faa486-8e73-4c31-b10f-c7f24c115cda/"+
+		"lessons/datetime/2020-03-31%2013%3A00/reschedule/datetime/2020-03-31%2014%3A00/set", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-User-Role", "psychologist")
+	rr := httptest.NewRecorder()
+	rest.router.ServeHTTP(rr, req)
+	assert.EqualValues(t, rr.Code, 200)
+}
+
 func Test_isTheTime(t *testing.T) {
 	type args struct {
 		t time.Time
@@ -64,12 +77,12 @@ func Test_isTheTime(t *testing.T) {
 	}{
 		{
 			name: "valid is the time",
-			args: args{time.Date(2020, 3,31, 13, 0,0,0, time.UTC)},
+			args: args{time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC)},
 			want: true,
 		},
 		{
 			name: "valid is not the time",
-			args: args{time.Date(2020, 3,31, 13, 16,0,0, time.UTC)},
+			args: args{time.Date(2020, 3, 31, 13, 16, 0, 0, time.UTC)},
 			want: false,
 		},
 	}
