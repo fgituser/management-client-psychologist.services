@@ -40,6 +40,15 @@ migrate-create-hours:
 migrate-create-employment:
 	@$(MIGRATE) create -ext sql -dir /migrations employment
 
+.PHONY: migrate-create-employee
+migrate-create-employee:
+	@$(MIGRATE) create -ext sql -dir /migrations employee
+
+.PHONY: migrate-create-cancellation_employment
+migrate-create-cancellation_employment:
+	@$(MIGRATE) create -ext sql -dir /migrations cancellation_employment
+
+
 
 
 .PHONY: testdata_add_case
