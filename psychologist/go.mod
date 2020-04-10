@@ -11,7 +11,6 @@ require (
 	github.com/go-chi/cors v1.0.1
 	github.com/go-chi/render v1.0.1
 	github.com/jmoiron/sqlx v1.2.0
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/pkg/errors v0.9.1

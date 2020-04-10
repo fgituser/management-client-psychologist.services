@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -45,6 +46,11 @@ func (rs *restserver) configureRouter() {
 	})
 	rs.router.Use(cors.Handler)
 	rs.router.Route("/api/v1", func(rapi chi.Router) {
+		rapi.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+			rs.logger.Info("pong")
+			render.JSON(w, r, "pong")
+			return
+		})
 		rapi.Group(func(remployees chi.Router) {
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
@@ -52,16 +58,85 @@ func (rs *restserver) configureRouter() {
 			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)
 			remployees.Group(func(remployed chi.Router) {
 				remployed.Use(rs.checkAttachment)
-				remployed.Post("/employess/{employee_id}/clients/{client_id}/lessons/date_time/{date_time}/set", rs.lessonSet)
+				remployed.Use(rs.lessonIsBusy) //TODO: remove middleware to method
+				remployed.Post("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/set", rs.lessonSet)
+				remployed.Put("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/reschedule/datetime/{new_date_time}/set", rs.lessonReschedule)
 			})
 		})
 	})
 }
 
+//Reschedule your occupation. Transfer is possible at any time, including non-working.
+func (rs *restserver) lessonReschedule(w http.ResponseWriter, r *http.Request) {
+	employeeID := chi.URLParam(r, "employee_id")
+	clientID := chi.URLParam(r, "client_id")
+
+	paramDateTimeOld, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	paramDateTimeNew, err := url.QueryUnescape(chi.URLParam(r, "new_date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetimeOld, err := time.Parse("2006-01-02 15:04", paramDateTimeOld)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetimeNew, err := time.Parse("2006-01-02 15:04", paramDateTimeNew)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	if !isTheTime(lessonDatetimeNew) {
+		rs.sendErrorJSON(w, r, 400, "a lesson can only be scheduled at the beginning of the hour", nil)
+		return
+	}
+
+	if err := rs.store.LessonCanceled(employeeID, lessonDatetimeOld); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	if err := rs.store.SetLesson(employeeID, clientID, lessonDatetimeNew); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, nil)
+}
+
 //Schedule an activity with your client. Recording is possible at any time, including non-working
 func (rs *restserver) lessonSet(w http.ResponseWriter, r *http.Request) {
-	// employeeID := chi.URLParam(r, "employee_id")
-	// xrole := r.Header.Get("X-User-Role")
+	employeeID := chi.URLParam(r, "employee_id")
+	clientID := chi.URLParam(r, "client_id")
+	dateTime, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetime, err := time.Parse("2006-01-02 15:04", dateTime)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	if !isTheTime(lessonDatetime) {
+		rs.sendErrorJSON(w, r, 400, "a lesson can only be scheduled at the beginning of the hour", nil)
+		return
+	}
+
+	if err := rs.store.SetLesson(employeeID, clientID, lessonDatetime); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, nil)
 }
 
 //clientsNameByEmployeeID Get a list of your customer names.
@@ -130,9 +205,13 @@ func (rs *restserver) checkAttachment(next http.Handler) http.Handler {
 func (rs *restserver) lessonIsBusy(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		employeeID := chi.URLParam(r, "employee_id")
-		dateTime := chi.URLParam(r, "date_time")
+		dateTime, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+		if err != nil {
+			rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+			return
+		}
 
-		dd, err := time.Parse("2006-01-02 15:04:05", dateTime)
+		dd, err := time.Parse("2006-01-02 15:04", dateTime)
 		if err != nil {
 			rs.sendErrorJSON(w, r, 500, ErrInternal, err)
 			return
@@ -168,7 +247,7 @@ func (rs *restserver) checkRole(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		xrole := r.Header.Get("X-User-Role")
 		if strings.TrimSpace(xrole) == "" {
-			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid employee_id"))
+			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
 			return
 		}
 		for _, ur := range rs.userRoles {
@@ -187,4 +266,11 @@ func employmentToClientID(lessons []*model.Employment) []*model.Client {
 		clientsID = append(clientsID, &model.Client{ID: l.Client.ID})
 	}
 	return clientsID
+}
+
+func isTheTime(t time.Time) bool {
+	if t.Minute() != 0 {
+		return false
+	}
+	return true
 }

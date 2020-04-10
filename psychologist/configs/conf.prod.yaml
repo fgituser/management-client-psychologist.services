@@ -1,0 +1,13 @@
+database:
+  log_queries: true
+  timeout_seconds: 20
+  dsn: postgres://psychologist-db/psychologist?sslmode=disable&user=postgres&password=postgres
+
+server:
+  port: :9999
+  debug: true
+  read_timeout_seconds: 15
+  write_timeout_seconds: 20
+
+url_services:
+  client_svc_base_url: "http://127.0.0.1"

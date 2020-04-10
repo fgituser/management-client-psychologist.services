@@ -152,3 +152,32 @@ func TestStore_LessonIsBusy(t *testing.T) {
 	//check where datetime is busy
 	assert.False(t, isBusy)
 }
+
+func TestStore_LessonCanceled(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	mock.ExpectBegin()
+	mock.ExpectExec(`insert into cancellation_employment \(employment_id\)`).
+		WithArgs(
+			"11e195fc-7010-4e50-8a4d-1d43e9c8e5db",       	//employee_id
+			time.Date(0, 1, 1, 13, 0, 0, 0, time.UTC), 		//calendar_id
+			time.Date(2020, 03, 31, 0, 0, 0, 0, time.UTC)). //start_time
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	//mock.ExpectRollback()
+	mock.ExpectCommit()
+
+	store := New(&database.DB{SQL: sqlxDB})
+	if err := store.LessonCanceled("11e195fc-7010-4e50-8a4d-1d43e9c8e5db",
+		time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatal(err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}

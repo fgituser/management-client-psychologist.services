@@ -217,3 +217,37 @@ func TestStore_CheckClientAttachment(t *testing.T) {
 		})
 	}
 }
+
+func TestStore_LessonCanceled(t *testing.T) {
+	type args struct {
+		employeeID string
+		dateTime   time.Time
+	}
+	tests := []struct {
+		name    string
+		s       *Store
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "valid",
+			s:       New(),
+			args:    args{employeeID: "75d2cdd6-cf69-44e7-9b28-c47792505d81", dateTime: time.Date(2020, 3, 31, 13, 0, 0, 0, time.Local).UTC()},
+			wantErr: false,
+		},
+		{
+			name:    "empty employyID",
+			s:       New(),
+			args:    args{employeeID: "", dateTime: time.Date(2020, 3, 31, 13, 0, 0, 0, time.Local).UTC()},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Store{}
+			if err := s.LessonCanceled(tt.args.employeeID, tt.args.dateTime); (err != nil) != tt.wantErr {
+				t.Errorf("Store.LessonCanceled() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

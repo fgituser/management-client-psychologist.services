@@ -8,3 +8,6 @@ server:
   debug: true
   read_timeout_seconds: 15
   write_timeout_seconds: 20
+
+url_services:
+  client_svc_base_url: "http://127.0.0.1"
