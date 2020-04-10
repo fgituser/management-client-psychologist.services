@@ -20,3 +20,4 @@ psychologist.code-workspace
 *.code-workspace
 *env.sh
 env.sh
+service
