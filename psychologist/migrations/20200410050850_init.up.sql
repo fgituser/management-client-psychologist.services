@@ -63,19 +63,19 @@ alter table calendar
 create table sсhedule
 (
     id          serial               not null
-        constraint shedule_pkey
+        constraint schedule_pkey
             primary key,
     employee_id integer              not null
-        constraint shedule_employee_id_fkey
+        constraint schedule_employee_id_fkey
             references employee
             on update restrict on delete restrict,
     work_hour   boolean default true not null,
     calendar_id date                 not null
-        constraint shedule_calendar_id_fkey
+        constraint schedule_calendar_id_fkey
             references calendar
             on update restrict on delete restrict,
     hour_id     integer              not null
-        constraint shedule_hour_id_fkey
+        constraint schedule_hour_id_fkey
             references hours
             on update restrict on delete restrict
 );
@@ -93,7 +93,7 @@ create table employment
             references clients
             on update restrict on delete restrict,
     sсhedule_id integer not null
-        constraint employment_shedule_id_fkey
+        constraint employment_schedule_id_fkey
             references sсhedule
             on update restrict on delete restrict
 );
