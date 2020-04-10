@@ -46,6 +46,11 @@ func (rs *restserver) configureRouter() {
 	})
 	rs.router.Use(cors.Handler)
 	rs.router.Route("/api/v1", func(rapi chi.Router) {
+		rapi.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+			rs.logger.Info("pong")
+			render.JSON(w, r, "pong")
+			return
+		})
 		rapi.Group(func(remployees chi.Router) {
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)

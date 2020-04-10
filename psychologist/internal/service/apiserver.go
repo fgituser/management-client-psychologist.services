@@ -28,7 +28,7 @@ func Start(cfg *config.Configuration) error {
 
 	restServer := newRESTServer(router, store, tranportClientSvc)
 
-	server.Start(restServer.router, &server.Config{
+	server.Start(restServer.router, restServer.logger, &server.Config{
 		Port:                cfg.Server.Port,
 		ReadTimeoutSeconds:  cfg.Server.ReadTimeout,
 		WriteTimeoutSeconds: cfg.Server.WriteTimeout,

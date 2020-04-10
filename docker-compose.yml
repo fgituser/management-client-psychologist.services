@@ -1,32 +1,33 @@
-version: "2"
+version: "2.1"
 services:
-  client:
-    build:
-      context: .
-      dockerfile: client/Dockerfile
-    restart: always
-    volumes:
-    - .:/data
-    container_name: client
-    ports:
-    - 8802:8081
-  operator:
-    build:
-      context: .
-      dockerfile: operator/Dockerfile
-    restart: always
-    volumes:
-    - .:/data
-    container_name: operator
-    ports:
-    - 8801:8081
-  psychologist:
+  psychologist-service:
+    image: psychologist-service
     build:
       context: .
       dockerfile: psychologist/Dockerfile
+    environment:
+      - APP_ENV=conf.prod
+      - APP_DSN=postgres://psychologist-db/psychologist?sslmode=disable&user=postgres&password=postgres
     restart: always
     volumes:
-    - .:/data
-    container_name: psychologist
+      - /tmp/app:/var/log/app
     ports:
-    - 8800:8081
+      - 9998:9999
+    depends_on:
+      psychologist-db:
+        condition: service_healthy
+
+  psychologist-db:
+    image: "postgres:alpine"
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "psychologist"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5434:5432"

@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/sirupsen/logrus"
 )
 
 // New instantes new Chi.Router
@@ -27,7 +27,7 @@ type Config struct {
 }
 
 //Start starts rest api server
-func Start(r chi.Router, cfg *Config) {
+func Start(r chi.Router, lg *logrus.Logger, cfg *Config) {
 	s := &http.Server{
 		Addr:         cfg.Port,
 		ReadTimeout:  time.Duration(cfg.ReadTimeoutSeconds) * time.Second,
@@ -36,9 +36,9 @@ func Start(r chi.Router, cfg *Config) {
 	}
 
 	go func() {
-		fmt.Printf("service started from port: %v", cfg.Port)
+		lg.Infof("service started from port: %v", cfg.Port)
 		if err := s.ListenAndServe(); err != nil {
-			fmt.Println("Shutting down the server")
+			lg.Info("Shutting down the server")
 		}
 	}()
 
@@ -47,7 +47,7 @@ func Start(r chi.Router, cfg *Config) {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
-	fmt.Println("server stoped")
+	lg.Info("server stoped")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := s.Shutdown(ctx); err != nil {

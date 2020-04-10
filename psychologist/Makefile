@@ -1,10 +1,12 @@
+MODULE = $(shell go list -m)
 CONFIG_FILE ?= ./configs/local.yml
 APP_DSN ?= $(shell sed -n 's/^dsn:[[:space:]]*"\(.*\)"/\1/p' $(CONFIG_FILE))
 MIGRATE := docker run -v $(shell pwd)/migrations:/migrations --network host migrate/migrate -path=/migrations/ -database "$(APP_DSN)"
 
 .PHONY: build
 build:  ## build the API server binary
-	CGO_ENABLED=0 go build ${LDFLAGS} -a -o service $(MODULE)/cmd/service	
+	@echo $(MODULE)/
+	GO111MODULE=on CGO_ENABLED=1 go build -o service $(MODULE)/cmd/service	
 
 .PHONY: db-start
 db-start: ## start the database server
@@ -22,6 +24,10 @@ migrate: ## run all new database migrations
 	@echo "Running all new database migrations..."
 	@echo "$(APP_DSN)"
 	@$(MIGRATE) up
+
+.PHONY: migrate-create-init
+migrate-create-init:
+	@$(MIGRATE) create -ext sql -dir /migrations init
 
 .PHONY: migrate-create-clients
 migrate-create-clients:
