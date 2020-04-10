@@ -1,7 +1,10 @@
 CONFIG_FILE ?= ./configs/local.yml
 APP_DSN ?= $(shell sed -n 's/^dsn:[[:space:]]*"\(.*\)"/\1/p' $(CONFIG_FILE))
 MIGRATE := docker run -v $(shell pwd)/migrations:/migrations --network host migrate/migrate -path=/migrations/ -database "$(APP_DSN)"
-	
+
+.PHONY: build
+build:  ## build the API server binary
+	CGO_ENABLED=0 go build ${LDFLAGS} -a -o service $(MODULE)/cmd/service	
 
 .PHONY: db-start
 db-start: ## start the database server
