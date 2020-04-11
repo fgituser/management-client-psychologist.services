@@ -7,3 +7,11 @@ type Client struct {
 	Name       string `json:"name,omitempty"`
 	Patronomic string `json:"patronomic,omitempty"`
 }
+
+//Psychologist presents psychologist
+type Psychologist struct {
+	ID         string `json:"id,omitempty"`
+	FamilyName string `json:"family_name,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Patronomic string `json:"patronomic,omitempty"`
+}

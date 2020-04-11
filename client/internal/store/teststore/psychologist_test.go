@@ -109,3 +109,52 @@ func TestStore_ClientsName(t *testing.T) {
 		})
 	}
 }
+
+func TestStore_IsAttachment(t *testing.T) {
+	type args struct {
+		clientID       string
+		psychologistID string
+	}
+	tests := []struct {
+		name    string
+		s       *Store
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name:    "valid",
+			s:       New(),
+			args:    args{clientID: "48faa486-8e73-4c31-b10f-c7f24c115cda", psychologistID: "75d2cdd6-cf69-44e7-9b28-c47792505d81"},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name:    "not valid empty clientID",
+			s:       New(),
+			args:    args{clientID: "", psychologistID: "75d2cdd6-cf69-44e7-9b28-c47792505d81"},
+			want:    false,
+			wantErr: true,
+		},
+		{
+			name:    "not valid empty psychologistID",
+			s:       New(),
+			args:    args{clientID: "48faa486-8e73-4c31-b10f-c7f24c115cda", psychologistID: ""},
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Store{}
+			got, err := s.IsAttachment(tt.args.clientID, tt.args.psychologistID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Store.IsAttachment() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Store.IsAttachment() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

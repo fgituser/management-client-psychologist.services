@@ -68,3 +68,28 @@ func TestStore_ClientsName(t *testing.T) {
 	}
 	assert.Equal(t, wantedCLientsName, clientsName)
 }
+
+func TestStore_IsAttachment(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	rows := sqlmock.NewRows([]string{"count"}).
+		AddRow(1)
+	mock.ExpectQuery(`^select count\(c.id\) from clients c`).
+		WithArgs("48faa486-8e73-4c31-b10f-c7f24c115cda", "75d2cdd6-cf69-44e7-9b28-c47792505d81").
+		WillReturnRows(rows)
+
+	//mock.ExpectCommit()
+	store := New(&database.DB{SQL: sqlxDB})
+	isAttachment, err := store.IsAttachment("48faa486-8e73-4c31-b10f-c7f24c115cda", "75d2cdd6-cf69-44e7-9b28-c47792505d81")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !isAttachment {
+		t.Fatal()
+	}
+}

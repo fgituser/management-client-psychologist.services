@@ -5,4 +5,5 @@ import "github.com/fgituser/management-client-psychologist.services/client/inter
 //Transport represents transport between micro services
 type Transport interface {
 	ClientLessonList(clientID, psychologistID, userRole string) ([]*model.Shedule, error)
+	PsychologistName(psychologistID, userRole string) (*model.Psychologist, error)
 }

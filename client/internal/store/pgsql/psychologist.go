@@ -34,6 +34,33 @@ func (s *Store) ClientsName(psychologistID string) ([]*model.Client, error) {
 	return convertClientDtoToModelClient(cDB), nil
 }
 
+//IsAttachment check attachment client from psycholog
+func (s *Store) IsAttachment(clientID, psychologistID string) (bool, error) {
+
+	if strings.TrimSpace(clientID) == "" {
+		return false, errors.New("clientID is empty")
+	}
+
+	if strings.TrimSpace(psychologistID) == "" {
+		return false, errors.New("psychologistID is empty")
+	}
+
+	var count int64
+
+	err := s.db.SQL.Get(&count, `
+	select count(c.id) from clients c
+	 where c.client_public_id = $1 and c.psychologist_public_id = $2`,clientID, psychologistID)
+
+	if err != nil {
+		return false, errors.Wrap(err, "an error occurred while check attachment client from psychologist")
+	}
+	
+	if count <= 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
 func convertClientDtoToModelClient(clientsDTO []*clients) []*model.Client {
 	mclient := make([]*model.Client, 0)
 	for _, c := range clientsDTO {
