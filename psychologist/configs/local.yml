@@ -1,2 +1,0 @@
-dsn: "postgres://127.0.0.1/psychologist?sslmode=disable&user=postgres&password=postgres"
-client_svc_base_url: "127.0.0.1:9898"
