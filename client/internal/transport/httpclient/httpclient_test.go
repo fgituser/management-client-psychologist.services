@@ -2,8 +2,11 @@ package httpclient
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	"github.com/alecthomas/assert"
 )
 
 func TestNew(t *testing.T) {
@@ -49,4 +52,30 @@ func TestNew(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHTTPClient_Do(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		assert.Equal(t, req.URL.String(), "/test_url")
+		assert.Equal(t, req.Header.Get("Accept"), "application/json")
+		assert.Equal(t, req.Header.Get("User-Agent"), "go client")
+		assert.Equal(t, req.Header.Get("Content-Type"), "application/json")
+		assert.Equal(t, req.Header.Get("X-Role"), "client")
+		body := []byte("pong")
+		rw.Write(body)
+	}))
+
+	defer server.Close()
+
+	hclient, err := New(server.URL, "go client", server.Client())
+	assert.NoError(t, err)
+
+	body, err := hclient.Do(nil,
+		"/test_url",
+		"client")
+	assert.NoError(t, err)
+
+	wantedBody := []byte("pong")
+	assert.NoError(t, err)
+	assert.Equal(t, body, wantedBody)
 }
