@@ -87,10 +87,7 @@ func convertresponseGetNamesByIDToModelClient(resclient []*responseGetNamesByID,
 		for _, d := range resclient {
 			if cc.ID == d.ClinetID {
 				nClients = append(nClients, &model.Client{
-					ID:         d.ClinetID,
-					FamilyName: d.FamilyName,
-					Name:       d.Name,
-					Patronomic: d.Patronomic,
+					ID: d.ClinetID,
 				})
 				continue
 			}

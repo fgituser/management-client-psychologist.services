@@ -7,6 +7,21 @@ import (
 	"github.com/pkg/errors"
 )
 
+//ClientsList ...
+func (s *Store) ClientsList() ([]*model.Client, error) {
+	return []*model.Client{
+		{
+			ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
+			FamilyName: "Гусев",
+			Name:       "Евгений",
+			Patronomic: "Викторович",
+			Psychologist: &model.Psychologist{
+				ID: "75d2cdd6-cf69-44e7-9b28-c47792505d81",
+			},
+		},
+	}, nil
+}
+
 //ClientsName get names clients from psychologistID
 func (s *Store) ClientsName(psychologistID string) ([]*model.Client, error) {
 

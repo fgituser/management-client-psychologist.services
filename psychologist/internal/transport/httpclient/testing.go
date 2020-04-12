@@ -34,22 +34,13 @@ func TestClients(t *testing.T) []*model.Client {
 	t.Helper()
 	return []*model.Client{
 		{
-			ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Гусев",
-			Name:       "Евгений",
-			Patronomic: "Викторович",
+			ID: "48faa486-8e73-4c31-b10f-c7f24c115cda",
 		},
 		{
-			ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Шмельцер",
-			Name:       "Вячеслав",
-			Patronomic: "Николаевич",
+			ID: "50faa486-8e73-4c31-b10f-c7f24c115cda",
 		},
 		{
-			ID:         "60faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Виевская",
-			Name:       "Анастасия",
-			Patronomic: "Федоровна",
+			ID: "60faa486-8e73-4c31-b10f-c7f24c115cda",
 		},
 	}
 }
@@ -108,8 +99,8 @@ func TestNewHTTPClient(t *testing.T) *HTTPClient {
 	t.Helper()
 
 	return &HTTPClient{
-		baseURL: "http://localhost",
+		baseURL:   "http://localhost",
 		userAgent: "go client",
-		client: &http.Client{},
+		client:    &http.Client{},
 	}
 }

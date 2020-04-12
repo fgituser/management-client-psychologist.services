@@ -158,3 +158,42 @@ func TestStore_IsAttachment(t *testing.T) {
 		})
 	}
 }
+
+func TestStore_ClientsList(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       *Store
+		want    []*model.Client
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			s:    New(),
+			want: []*model.Client{
+				{
+					ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
+					FamilyName: "Гусев",
+					Name:       "Евгений",
+					Patronomic: "Викторович",
+					Psychologist: &model.Psychologist{
+						ID: "75d2cdd6-cf69-44e7-9b28-c47792505d81",
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Store{}
+			got, err := s.ClientsList()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Store.ClientsList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Store.ClientsList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -93,4 +94,75 @@ func Test_isTheTime(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_restserver_employeesList(t *testing.T) {
+	rest := testRest(t)
+	req, err := http.NewRequest("GET", "/api/v1/employees/list", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-User-Role", "admin")
+	rr := httptest.NewRecorder()
+	rest.router.ServeHTTP(rr, req)
+	assert.EqualValues(t, rr.Code, 200)
+	//expected := `[{"client":{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"},"shedule":[{"date_time":"2020-03-31T13:00:00+07:00"}]}]`
+	//assert.EqualValues(t, rr.Body.String(), expected)
+	assert.NotNil(t, rr.Body)
+}
+
+func Test_restserver_lessonsList(t *testing.T) {
+	rest := testRest(t)
+	req, err := http.NewRequest("GET", "/api/v1/lessons/list", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-User-Role", "admin")
+	rr := httptest.NewRecorder()
+	rest.router.ServeHTTP(rr, req)
+	assert.EqualValues(t, rr.Code, 200)
+	expected := []byte(`[{"client":{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda"},"shedule":[{"employee":{"id":"50faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"},"date_time":"2020-03-31T13:00:00Z"}]}]`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
+}
+
+func Test_restserver_employeesListByID(t *testing.T) {
+	rest := testRest(t)
+	req, err := http.NewRequest("POST", "/api/v1/employees/list_by_id", bytes.NewBuffer([]byte(`[{"id":"50faa486-8e73-4c31-b10f-c7f24c115cda"}]`)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-User-Role", "admin")
+	rr := httptest.NewRecorder()
+	rest.router.ServeHTTP(rr, req)
+	assert.EqualValues(t, rr.Code, 200)
+	expected := []byte(`[{"id":"50faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"}]`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
+}
+
+func Test_restserver_employeeName(t *testing.T) {
+	rest := testRest(t)
+	req, err := http.NewRequest("GET", "/api/v1/employees/50faa486-8e73-4c31-b10f-c7f24c115cda/name", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-User-Role", "client")
+	rr := httptest.NewRecorder()
+	rest.router.ServeHTTP(rr, req)
+	assert.EqualValues(t, rr.Code, 200)
+	expected := []byte(`{"id":"50faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"}`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
+}
+
+func Test_restserver_lessonByEmployeeIDAndClientID(t *testing.T) {
+	rest := testRest(t)
+	req, err := http.NewRequest("GET", "/api/v1/employees/75d2cdd6-cf69-44e7-9b28-c47792505d81/client/48faa486-8e73-4c31-b10f-c7f24c115cda/lessons", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-User-Role", "admin")
+	rr := httptest.NewRecorder()
+	rest.router.ServeHTTP(rr, req)
+	assert.EqualValues(t, rr.Code, 200)
+	expected := []byte(`[{"date_time":"2020-03-31T13:00:00Z"}]`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
 }

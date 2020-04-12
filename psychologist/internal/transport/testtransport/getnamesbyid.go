@@ -15,25 +15,15 @@ func (h *HTTPClient) GetNamesByID(c []*model.Client, employeeID, userRole string
 		return nil, errors.New("an error accured get names by id: bad parametrs")
 	}
 
-
 	return []*model.Client{
 		{
-			ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Гусев",
-			Name:       "Евгений",
-			Patronomic: "Викторович",
+			ID: "48faa486-8e73-4c31-b10f-c7f24c115cda",
 		},
 		{
-			ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Шмельцер",
-			Name:       "Вячеслав",
-			Patronomic: "Николаевич",
+			ID: "50faa486-8e73-4c31-b10f-c7f24c115cda",
 		},
 		{
-			ID:         "60faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Виевская",
-			Name:       "Анастасия",
-			Patronomic: "Федоровна",
+			ID: "60faa486-8e73-4c31-b10f-c7f24c115cda",
 		},
 	}, nil
 }

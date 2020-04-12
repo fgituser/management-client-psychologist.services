@@ -3,9 +3,9 @@ package service
 import (
 	"testing"
 
-	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/store/teststore"
-	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/transport/testtransport"
-	"github.com/fgituser/management-client-psychologist.services/psychologist/pkg/server"
+	"github.com/fgituser/management-client-psychologist.services/client/internal/store/teststore"
+	"github.com/fgituser/management-client-psychologist.services/client/internal/transport/testtransport"
+	"github.com/fgituser/management-client-psychologist.services/client/pkg/server"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,16 +24,17 @@ func testRest(t *testing.T) *restserver {
 				name:     "psychologist",
 				isActive: true,
 			}, {
-				name:     "admin",
+				name: "client",
 				isActive: true,
 			}, {
-				name:     "client",
+				name: "admin",
 				isActive: true,
 			},
 		},
 		store:           teststore.New(),
-		transportClient: testtransport.New(),
+		transportPsychologist: testtransport.New(),
 	}
 	rest.configureRouter()
 	return &rest
 }
+

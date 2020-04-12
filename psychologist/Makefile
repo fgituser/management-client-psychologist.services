@@ -11,13 +11,13 @@ build:  ## build the API server binary
 .PHONY: db-start
 db-start: ## start the database server
 	@mkdir -p testdata/postgres
-	docker run --rm --name postgres -v $(shell pwd)/testdata:/testdata \
+	docker run --rm --name postgres_psychologist -v $(shell pwd)/testdata:/testdata \
 		-v $(shell pwd)/testdata/postgres:/var/lib/postgresql/data \
-		-e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=psychologist -d -p 5432:5432 postgres
+		-e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=psychologist -d -p 5439:5432 postgres
 
 .PHONY: db-stop
 db-stop: ## stop the database server
-	docker stop postgres
+	docker stop postgres_psychologist
 
 .PHONY: migrate
 migrate: ## run all new database migrations
