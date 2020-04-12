@@ -88,7 +88,7 @@ func TestStore_SetLesson(t *testing.T) {
 	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`^insert into employment \(client_id, shedule_id\)`).
+	mock.ExpectExec(`^insert into employment \(client_id, schedule_id\)`).
 		WithArgs(
 			"48faa486-8e73-4c31-b10f-c7f24c115cda",        //client_public_id
 			time.Date(2020, 03, 31, 0, 0, 0, 0, time.UTC), //calendar_id
@@ -193,7 +193,7 @@ func TestStore_EmployeeList(t *testing.T) {
 	defer mockDB.Close()
 	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
 
-	rows := sqlmock.NewRows([]string{"family_name", "first_name", "patronomic", "employee_public_id"}).
+	rows := sqlmock.NewRows([]string{"family_name", "first_name", "patronymic", "employee_public_id"}).
 		AddRow("Гусев", "Евгений", "Викторович", "48faa486-8e73-4c31-b10f-c7f24c115cda")
 	mock.ExpectQuery(`^select e.family_name, e.first_name, e.patronymic, e.employee_public_id from employee e`).
 		WillReturnRows(rows)
