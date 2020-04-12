@@ -46,7 +46,6 @@ func (h *HTTPClient) Do(data []byte, url string, hrole string) ([]byte, error) {
 	req.Header.Set("User-Agent", h.userAgent)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Role", hrole)
-
 	res, err := h.client.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while getting customer names by identifier")
