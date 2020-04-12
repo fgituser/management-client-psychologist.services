@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -14,7 +15,7 @@ func (h *HTTPClient) ClientLessonSet(clientID, psychologistID, userRole string, 
 		return errors.New("an error occured set lesson")
 	}
 
-	_, err := h.Do(nil,
+	_, err := h.Do(nil, http.MethodPost,
 		fmt.Sprintf("/employees/%v/clients/%v/lessons/datetime/%v/set", psychologistID, clientID, dateTime),
 		userRole)
 	if err != nil {

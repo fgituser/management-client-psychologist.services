@@ -3,6 +3,7 @@ package httpclient
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -25,7 +26,7 @@ func (h *HTTPClient) ClientLessonList(clientID, psychologistID, userRole string)
 		return nil, errors.New("an error accured get client lesson list")
 	}
 
-	res, err := h.Do(nil,
+	res, err := h.Do(nil, http.MethodGet,
 		fmt.Sprintf("/employees/%v/client/%v/lessons", psychologistID, clientID),
 		userRole)
 	if err != nil {

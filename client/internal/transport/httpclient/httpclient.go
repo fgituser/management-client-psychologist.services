@@ -35,13 +35,12 @@ func New(baseURL, userAgent string, client *http.Client) (*HTTPClient, error) {
 }
 
 //Do send request
-func (h *HTTPClient) Do(data []byte, url string, hrole string) ([]byte, error) {
+func (h *HTTPClient) Do(data []byte, httpMethod, url string, hrole string) ([]byte, error) {
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%v%v", h.baseURL, url), bytes.NewBuffer(data))
+	req, err := http.NewRequest(httpMethod, fmt.Sprintf("%v%v", h.baseURL, url), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while getting customer names by identifier")
 	}
-
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", h.userAgent)
 	req.Header.Set("Content-Type", "application/json")

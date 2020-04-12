@@ -70,7 +70,7 @@ func TestHTTPClient_Do(t *testing.T) {
 	hclient, err := New(server.URL, "go client", server.Client())
 	assert.NoError(t, err)
 
-	body, err := hclient.Do(nil,
+	body, err := hclient.Do(nil, http.MethodGet,
 		"/test_url",
 		"client")
 	assert.NoError(t, err)

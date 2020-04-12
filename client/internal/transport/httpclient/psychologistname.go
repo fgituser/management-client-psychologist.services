@@ -3,6 +3,7 @@ package httpclient
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/fgituser/management-client-psychologist.services/client/internal/model"
@@ -22,7 +23,7 @@ func (h *HTTPClient) PsychologistName(psychologistID, userRole string) (*model.P
 		return nil, errors.New("not valid psychologistID")
 	}
 
-	res, err := h.Do(nil,
+	res, err := h.Do(nil, http.MethodGet,
 		fmt.Sprintf("/employees/%v/name", psychologistID),
 		userRole)
 	if err != nil {
