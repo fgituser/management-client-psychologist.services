@@ -22,6 +22,64 @@ type employee struct {
 	EmployeePublicID sql.NullString `db:"employee_public_id"`
 }
 
+type employment struct {
+	EmploeePublicID   sql.NullString `db:"employee_public_id"`
+	EmploeeFamilyName sql.NullString `db:"family_name"`
+	EmploeeFirstName  sql.NullString `db:"first_name"`
+	EmploeePatronomic sql.NullString `db:"patronymic"`
+	ClientPublicID    sql.NullString `db:"client_public_id"`
+	CalendarID        sql.NullTime   `db:"calendar_id"`
+	StartTime         sql.NullTime   `db:"start_time"`
+}
+
+//LessonList get all lessons
+func (s *Store) LessonsList() ([]*model.Employment, error) {
+	empl := make([]*employment, 0)
+	if err := s.db.SQL.Select(&empl, `
+	select em.employee_public_id, em.family_name, em.first_name, em.patronymic, c.client_public_id, s.calendar_id, h.start_time from employment e 
+		inner join sсhedule s on s.id  = e.sсhedule_id
+		inner join clients c on c.id = e.client_id
+		inner join hours h on h.id  = s.hour_id
+		inner join employee em on em.id = s.employee_id
+		left join cancellation_employment ce on ce.employment_id = e.id 
+	where ce.employment_id is null
+	`); err != nil {
+		return nil, errors.Wrap(err, "an error accured get all lessons")
+	}
+	return employmentToModelEmployment(empl)
+}
+
+func employmentToModelEmployment(empl []*employment) ([]*model.Employment, error) {
+	mempl := make([]*model.Employment, 0)
+	for _, e := range empl {
+		mempl = append(mempl, &model.Employment{
+			Client: &model.Client{
+				ID: e.ClientPublicID.String,
+			},
+		})
+	}
+	for _, m := range mempl {
+		for _, e := range empl {
+			if m.Client.ID == e.ClientPublicID.String {
+				dt, err := datetime.DateTimeJoiner(e.CalendarID, e.StartTime)
+				if err != nil {
+					return nil, err
+				}
+				m.Shedule = append(m.Shedule, &model.Shedule{
+					Employee: &model.Employee{
+						ID:         e.EmploeePublicID.String,
+						FamilyName: e.EmploeeFamilyName.String,
+						Name:       e.EmploeeFirstName.String,
+						Patronomic: e.EmploeePatronomic.String,
+					},
+					DateTime: dt,
+				})
+			}
+		}
+	}
+	return mempl, nil
+}
+
 //EmployeeList get all employees
 func (s *Store) EmployeeList() ([]*model.Employee, error) {
 	empl := make([]*employee, 0)
@@ -78,8 +136,8 @@ type lessonsList struct {
 	StartTime      sql.NullTime   `db:"start_time"`
 }
 
-//LessonsList Get a list of your classes: date, client name
-func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
+//LessonsListByEmployeeID Get a list of your classes: date, client name
+func (s *Store) LessonsListByEmployeeID(employeeID string) ([]*model.Employment, error) {
 	if strings.TrimSpace(employeeID) == "" {
 		return nil, errors.New("employeeID is empty")
 	}
@@ -88,7 +146,7 @@ func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
 
 	err := s.db.SQL.Select(&allLessons, `
 	select c.client_public_id, s.calendar_id, h.start_time from employment e 
-		inner join shedule s on s.id  = e.shedule_id
+		inner join schedule s on s.id  = e.schedule_id
 		inner join clients c on c.id = e.client_id
 		inner join hours h on h.id  = s.hour_id
 		inner join employee em on em.id = s.employee_id
@@ -118,9 +176,9 @@ func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error
 	}
 
 	tx := s.db.SQL.MustBegin()
-	_, err = tx.Exec(`insert into employment (client_id, shedule_id)
+	_, err = tx.Exec(`insert into employment (client_id, schedule_id)
 	(
-		select c.id client_id, s.id shedule_id from shedule s
+		select c.id client_id, s.id schedule_id from schedule s
 			inner join employee e on e.id = s.employee_id 
 			inner join hours h on h.id = s.hour_id
 			inner join clients c on (c.client_public_id  = $1 and c.employee_id = s.employee_id ) //TODO: change where
@@ -177,7 +235,7 @@ func (s *Store) LessonIsBusy(employeeID string, dateTime time.Time) (bool, error
 
 	err = s.db.SQL.Get(&count, `
 	select count(e.id) from employment e 
-		inner join shedule s on s.id = e.shedule_id
+		inner join schedule s on s.id = e.schedule_id
 		inner join hours h on h.id = s.hour_id
 		inner join employee empl on empl.id = s.employee_id
 		left join cancellation_employment ce on ce.employment_id = e.id 
@@ -212,7 +270,7 @@ func (s *Store) LessonCanceled(employeeID string, dateTime time.Time) error {
 	insert into cancellation_employment (employment_id)
 	(
 		select e.id from employment e 
-			inner join shedule s on s.id = e.shedule_id
+			inner join schedule s on s.id = e.schedule_id
 			inner join hours h on h.id = s.hour_id
 			inner join employee empl on empl.id = s.employee_id
 			left join cancellation_employment ce on ce.employment_id = e.id 
@@ -236,7 +294,7 @@ func (s *Store) LessonCanceled(employeeID string, dateTime time.Time) error {
 func lessonsListToEmployment(allLessons []*lessonsList) ([]*model.Employment, error) {
 	e := make([]*model.Employment, 0)
 	for _, a := range allLessons {
-		shedule := make([]*model.Shedule, 0)
+		schedule := make([]*model.Shedule, 0)
 		for _, onelesson := range allLessons {
 			if a.ClientPublicID == onelesson.ClientPublicID {
 
@@ -245,13 +303,13 @@ func lessonsListToEmployment(allLessons []*lessonsList) ([]*model.Employment, er
 					return nil, errors.Wrap(err, "error transformations lessonList to Employment")
 				}
 
-				shedule = append(shedule, &model.Shedule{
+				schedule = append(schedule, &model.Shedule{
 					DateTime: dateTime,
 				})
 			}
 			e = append(e, &model.Employment{
-				Client:  &model.Client{ID: a.ClientPublicID.String},
-				Shedule: shedule,
+				Client:   &model.Client{ID: a.ClientPublicID.String},
+				Shedule: schedule,
 			})
 		}
 	}

@@ -39,7 +39,7 @@ func TestPsychologist_FindClients(t *testing.T) {
 	assert.Equal(t, uu[0].ID, clientID)
 }
 
-func TestStore_LessonsList(t *testing.T) {
+func TestStore_LessonsListByEmployeeID(t *testing.T) {
 	mockDB, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -56,7 +56,7 @@ func TestStore_LessonsList(t *testing.T) {
 		WillReturnRows(rows)
 
 	store := New(&database.DB{SQL: sqlxDB})
-	ll, err := store.LessonsList("11e195fc-7010-4e50-8a4d-1d43e9c8e5db")
+	ll, err := store.LessonsListByEmployeeID("11e195fc-7010-4e50-8a4d-1d43e9c8e5db")
 	if err != nil {
 		t.Error(err)
 	}
@@ -209,4 +209,44 @@ func TestStore_EmployeeList(t *testing.T) {
 		},
 	}
 	assert.Equal(t, employeeList, wanted)
+}
+
+func TestStore_LessonsList(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	rows := sqlmock.NewRows([]string{"employee_public_id", "family_name", "first_name", "patronymic", "client_public_id", "calendar_id", "start_time"}).
+		AddRow("50faa486-8e73-4c31-b10f-c7f24c115cda", "Гусев", "Евгений", "Викторович",
+			"48faa486-8e73-4c31-b10f-c7f24c115cda", time.Date(2020, 3, 31, 0, 0, 0, 0, time.UTC), time.Date(0, 1, 1, 13, 0, 0, 0, time.UTC))
+	mock.ExpectQuery(`^select em.employee_public_id, em.family_name, em.first_name, em.patronymic, c.client_public_id, s.calendar_id, h.start_time from employment e`).
+		WillReturnRows(rows)
+
+	//mock.ExpectCommit()
+	store := New(&database.DB{SQL: sqlxDB})
+	lessonList, err := store.LessonsList()
+	assert.NoError(t, err)
+	wanted := []*model.Employment{
+		{
+			Client: &model.Client{
+				ID: "48faa486-8e73-4c31-b10f-c7f24c115cda",
+			},
+			Shedule: []*model.Shedule{
+				{
+					Employee: &model.Employee{
+						ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
+						FamilyName: "Гусев",
+						Name:       "Евгений",
+						Patronomic: "Викторович",
+					},
+
+					DateTime: time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC),
+				},
+			},
+		},
+	}
+	assert.Equal(t, lessonList, wanted)
 }

@@ -17,7 +17,7 @@ db-start: ## start the database server
 
 .PHONY: db-stop
 db-stop: ## stop the database server
-	docker stop postgres
+	docker stop postgres_psychologist
 
 .PHONY: migrate
 migrate: ## run all new database migrations

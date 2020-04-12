@@ -56,7 +56,7 @@ func TestStore_FindClients(t *testing.T) {
 	}
 }
 
-func TestStore_LessonsList(t *testing.T) {
+func TestStore_LessonsListByEmployeeID(t *testing.T) {
 	type args struct {
 		employeeID string
 	}
@@ -104,7 +104,7 @@ func TestStore_LessonsList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Store{}
-			got, err := s.LessonsList(tt.args.employeeID)
+			got, err := s.LessonsListByEmployeeID(tt.args.employeeID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Store.LessonsList() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -283,6 +283,53 @@ func TestStore_EmployeeList(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Store.EmployeeList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStore_LessonsList(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       *Store
+		want    []*model.Employment
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			s:    New(),
+			want: []*model.Employment{
+				{
+					Client: &model.Client{
+						ID: "48faa486-8e73-4c31-b10f-c7f24c115cda",
+					},
+					Shedule: []*model.Shedule{
+						{
+							Employee: &model.Employee{
+								ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
+								FamilyName: "Гусев",
+								Name:       "Евгений",
+								Patronomic: "Викторович",
+							},
+
+							DateTime: time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC),
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Store{}
+			got, err := s.LessonsList()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Store.LessonList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Store.LessonList() = %v, want %v", got, tt.want)
 			}
 		})
 	}

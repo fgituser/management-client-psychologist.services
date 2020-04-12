@@ -56,6 +56,7 @@ func (rs *restserver) configureRouter() {
 				remployees.Use(rs.checkRole)
 				radmin.Use(rs.checkRoleAdmin)
 				radmin.Get("/employees/list", rs.employeesList)
+				radmin.Get("/lessons/list", rs.lessonsList)
 			})
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
@@ -71,6 +72,16 @@ func (rs *restserver) configureRouter() {
 			})
 		})
 	})
+}
+
+//get all lessons list
+func (rs *restserver) lessonsList(w http.ResponseWriter, r *http.Request) {
+	lList, err := rs.store.LessonsList()
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, lList)
 }
 
 //get all employyes
@@ -177,7 +188,7 @@ func (rs *restserver) clientsNameByEmployeeID(w http.ResponseWriter, r *http.Req
 func (rs *restserver) lessonListByEmployeeID(w http.ResponseWriter, r *http.Request) {
 	employeeID := chi.URLParam(r, "employee_id")
 	xrole := r.Header.Get("X-User-Role")
-	ll, err := rs.store.LessonsList(employeeID)
+	ll, err := rs.store.LessonsListByEmployeeID(employeeID)
 	if err != nil {
 		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
 		return

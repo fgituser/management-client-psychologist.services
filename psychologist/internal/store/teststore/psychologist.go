@@ -9,6 +9,29 @@ import (
 	"github.com/pkg/errors"
 )
 
+//LessonsList get all lessons
+func (s *Store) LessonsList() ([]*model.Employment, error) {
+	return []*model.Employment{
+		{
+			Client: &model.Client{
+				ID: "48faa486-8e73-4c31-b10f-c7f24c115cda",
+			},
+			Shedule: []*model.Shedule{
+				{
+					Employee: &model.Employee{
+						ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
+						FamilyName: "Гусев",
+						Name:       "Евгений",
+						Patronomic: "Викторович",
+					},
+
+					DateTime: time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC),
+				},
+			},
+		},
+	}, nil
+}
+
 //EmployeeList ...
 func (s *Store) EmployeeList() ([]*model.Employee, error) {
 	return []*model.Employee{
@@ -39,8 +62,8 @@ func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
 	}, nil
 }
 
-//LessonsList Get a list of your classes: date, client name
-func (s *Store) LessonsList(employeeID string) ([]*model.Employment, error) {
+//LessonsListByEmployeeID Get a list of your classes: date, client name
+func (s *Store) LessonsListByEmployeeID(employeeID string) ([]*model.Employment, error) {
 	if strings.TrimSpace(employeeID) == "" || employeeID != "75d2cdd6-cf69-44e7-9b28-c47792505d81" {
 		return nil, errors.New("employeeID is empty or not valid")
 	}
