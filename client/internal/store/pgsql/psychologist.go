@@ -9,10 +9,26 @@ import (
 )
 
 type clients struct {
-	ClientPublicID sql.NullString `db:"client_public_id"`
-	FamilyName     sql.NullString `db:"family_name"`
-	FirstName      sql.NullString `db:"first_name"`
-	Patronomic     sql.NullString `db:"patronomic"`
+	ClientPublicID       sql.NullString `db:"client_public_id"`
+	FamilyName           sql.NullString `db:"family_name"`
+	FirstName            sql.NullString `db:"first_name"`
+	Patronomic           sql.NullString `db:"patronomic"`
+	PsychologistPublicID sql.NullString `db:"psychologist_public_id"`
+}
+
+//ClientsList get all clients and psychologistID
+func (s *Store) ClientsList() ([]*model.Client, error) {
+
+	cDB := make([]*clients, 0)
+
+	err := s.db.SQL.Select(&cDB, `
+	select c.client_public_id, c.family_name, c.first_name, c.patronymic, c.psychologist_public_id 
+	from clients c `)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "an error occurred while get all clients")
+	}
+	return convertClientDtoToModelClient(cDB), nil
 }
 
 //ClientsName get names clients from psychologistID
@@ -49,12 +65,12 @@ func (s *Store) IsAttachment(clientID, psychologistID string) (bool, error) {
 
 	err := s.db.SQL.Get(&count, `
 	select count(c.id) from clients c
-	 where c.client_public_id = $1 and c.psychologist_public_id = $2`,clientID, psychologistID)
+	 where c.client_public_id = $1 and c.psychologist_public_id = $2`, clientID, psychologistID)
 
 	if err != nil {
 		return false, errors.Wrap(err, "an error occurred while check attachment client from psychologist")
 	}
-	
+
 	if count <= 0 {
 		return false, nil
 	}
@@ -69,6 +85,9 @@ func convertClientDtoToModelClient(clientsDTO []*clients) []*model.Client {
 			FamilyName: c.FamilyName.String,
 			Name:       c.FirstName.String,
 			Patronomic: c.Patronomic.String,
+			Psychologist: &model.Psychologist{
+				ID: c.PsychologistPublicID.String,
+			},
 		})
 	}
 	return mclient
