@@ -55,6 +55,8 @@ func (rs *restserver) configureRouter() {
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
 			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID)
+			//TODO: /employees/{employee_id}/client/{client_id}/lessons
+			//TODO: /employees/{employee_id}/name"
 			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)
 			remployees.Group(func(remployed chi.Router) {
 				remployed.Use(rs.checkAttachment)

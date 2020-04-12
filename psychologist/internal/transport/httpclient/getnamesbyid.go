@@ -42,7 +42,7 @@ func (h *HTTPClient) GetNamesByID(c []*model.Client, employeeID, userRole string
 	}
 
 	res, err := h.Do(payload,
-		fmt.Sprintf("/clients/psychologist/%v/names", employeeID),
+		fmt.Sprintf("/client/psychologist/%v/names", employeeID),
 		userRole)
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occured hole get name by id")
