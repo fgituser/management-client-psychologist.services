@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -79,9 +80,8 @@ func Test_restserver_psychologistName(t *testing.T) {
 	rr := httptest.NewRecorder()
 	rest.router.ServeHTTP(rr, req)
 	assert.EqualValues(t, rr.Code, 200)
-	//expected := []byte("{\"id\":\"58faa486-8e73-4c31-b10f-c7f24c115cda\",\"family_name\":\"Васкецов\",\"name\":\"Артем\",\"patronomic\":\"Викторович\"}")
-	assert.NotNil(t, rr.Body)
-	//assert.Equal(t, rr.Body.Bytes(), expected)
+	expected := []byte("{\"id\":\"58faa486-8e73-4c31-b10f-c7f24c115cda\",\"family_name\":\"Васкецов\",\"name\":\"Артем\",\"patronomic\":\"Викторович\"}")
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
 }
 
 func Test_restserver_lessonSet(t *testing.T) {
