@@ -26,6 +26,9 @@ func testRest(t *testing.T) *restserver {
 			}, {
 				name:     "admin",
 				isActive: true,
+			}, {
+				name:     "client",
+				isActive: true,
 			},
 		},
 		store:           teststore.New(),

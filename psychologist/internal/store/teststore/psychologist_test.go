@@ -382,3 +382,56 @@ func TestStore_EmployeesNames(t *testing.T) {
 		})
 	}
 }
+
+func TestStore_LessonsListByEmployeeIDAndClientID(t *testing.T) {
+	type args struct {
+		employeeID string
+		clientID   string
+	}
+	tests := []struct {
+		name    string
+		s       *Store
+		args    args
+		want    []*model.Shedule
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			s:    New(),
+			args: args{employeeID: "75d2cdd6-cf69-44e7-9b28-c47792505d81", clientID: "48faa486-8e73-4c31-b10f-c7f24c115cda"},
+			want: []*model.Shedule{
+				{
+					DateTime: time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "not valid employeeID",
+			s:    New(),
+			args: args{employeeID: "", clientID: "48faa486-8e73-4c31-b10f-c7f24c115cda"},
+			want: nil,
+			wantErr: true,
+		},
+		{
+			name: "not valid clientID",
+			s:    New(),
+			args: args{employeeID: "75d2cdd6-cf69-44e7-9b28-c47792505d81", clientID: ""},
+			want: nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Store{}
+			got, err := s.LessonsListByEmployeeIDAndClientID(tt.args.employeeID, tt.args.clientID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Store.LessonsListByEmployeeIDAndClientID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Store.LessonsListByEmployeeIDAndClientID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

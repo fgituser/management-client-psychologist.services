@@ -33,8 +33,38 @@ type employment struct {
 	StartTime         sql.NullTime   `db:"start_time"`
 }
 
+//LessonsListByEmployeeIDAndClientID ...
+func (s *Store) LessonsListByEmployeeIDAndClientID(employeeID, clientID string) ([]*model.Shedule, error) {
+	lessonList := make([]*employment, 0)
+	if err := s.db.SQL.Select(&lessonList, `
+	select s.calendar_id, h.start_time from employment e 
+		inner join sсhedule s on s.id  = e.sсhedule_id 
+		inner join clients c on c.id = e.client_id
+		inner join hours h on h.id  = s.hour_id
+		inner join employee em on em.id = s.employee_id
+		left join cancellation_employment ce on ce.employment_id = e.id 
+	where em.employee_public_id = $1 and c.client_public_id  = $2 and 
+	ce.employment_id is null
+	`, employeeID, clientID); err != nil {
+		return nil, errors.Wrap(err, "an error accured get employeesNames")
+	}
+	return employmentToModelSchedule(lessonList)
+}
+
+func employmentToModelSchedule(empl []*employment) ([]*model.Shedule, error) {
+	schedule := make([]*model.Shedule, 0)
+	for _, e := range empl {
+		dt, err := datetime.DateTimeJoiner(e.CalendarID, e.StartTime)
+		if err != nil {
+			return nil, err
+		}
+		schedule = append(schedule, &model.Shedule{DateTime: dt})
+	}
+	return schedule, nil
+}
+
 //EmployeesNames ...
-func (s *Store) EmployeesNames(employees []*model.Employee) ([]*model.Employee, error){
+func (s *Store) EmployeesNames(employees []*model.Employee) ([]*model.Employee, error) {
 	employeeID := make([]string, 0)
 	for _, e := range employees {
 		employeeID = append(employeeID, e.ID)
@@ -48,7 +78,6 @@ func (s *Store) EmployeesNames(employees []*model.Employee) ([]*model.Employee, 
 	}
 	return employeeToModelEmployee(empl), nil
 }
-
 
 //LessonsList get all lessons
 func (s *Store) LessonsList() ([]*model.Employment, error) {

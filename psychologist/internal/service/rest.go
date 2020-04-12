@@ -54,7 +54,7 @@ func (rs *restserver) configureRouter() {
 		})
 		rapi.Group(func(remployees chi.Router) {
 			remployees.Group(func(radmin chi.Router) {
-				remployees.Use(rs.checkRole)
+				radmin.Use(rs.checkRole)
 				radmin.Use(rs.checkRoleAdmin)
 				radmin.Get("/employees/list", rs.employeesList)
 				radmin.Get("/lessons/list", rs.lessonsList)
@@ -63,13 +63,12 @@ func (rs *restserver) configureRouter() {
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
 			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID)
-			//TODO: /employees/{employee_id}/client/{client_id}/lessons
-			//TODO: /employees/{employee_id}/name"
+			remployees.Get("/employees/{employee_id}/client/{client_id}/lessons", rs.lessonByEmployeeIDAndClientID)
 			remployees.Get("/employees/{employee_id}/name", rs.employeeNameByID)
 			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)
 			remployees.Group(func(remployed chi.Router) {
 				remployed.Use(rs.checkAttachment)
-				remployed.Use(rs.lessonIsBusy) //TODO: remove middleware to method
+				remployed.Use(rs.lessonIsBusy)
 				remployed.Post("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/set", rs.lessonSet)
 				remployed.Put("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/reschedule/datetime/{new_date_time}/set", rs.lessonReschedule)
 			})
@@ -77,6 +76,19 @@ func (rs *restserver) configureRouter() {
 	})
 }
 
+//get lessons by employee id and cleint id
+func (rs *restserver) lessonByEmployeeIDAndClientID(w http.ResponseWriter, r *http.Request) {
+	employeeID := chi.URLParam(r, "employee_id")
+	clientID := chi.URLParam(r, "client_id")
+	lessonList, err := rs.store.LessonsListByEmployeeIDAndClientID(employeeID, clientID)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, lessonList)
+}
+
+//get employee name by id
 func (rs *restserver) employeeNameByID(w http.ResponseWriter, r *http.Request) {
 	employeeID := chi.URLParam(r, "employee_id")
 	employeeName, err := rs.store.EmployeesNames([]*model.Employee{{ID: employeeID}})

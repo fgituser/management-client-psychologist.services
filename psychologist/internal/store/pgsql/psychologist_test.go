@@ -284,3 +284,31 @@ func TestStore_EmployeesNames(t *testing.T) {
 	fmt.Println(string(data))
 	assert.Equal(t, employeeList, wanted)
 }
+
+func TestStore_LessonsListByEmployeeIDAndClientID(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	rows := sqlmock.NewRows([]string{"calendar_id", "start_time"}).
+		AddRow(time.Date(2020, 3, 31, 0, 0, 0, 0, time.UTC), time.Date(0, 1, 1, 13, 0, 0, 0, time.UTC))
+	mock.ExpectQuery(`^select s.calendar_id, h.start_time from employment e`).
+		WithArgs("75d2cdd6-cf69-44e7-9b28-c47792505d81", "48faa486-8e73-4c31-b10f-c7f24c115cda").
+		WillReturnRows(rows)
+
+	//mock.ExpectCommit()
+	store := New(&database.DB{SQL: sqlxDB})
+	employeeList, err := store.LessonsListByEmployeeIDAndClientID("75d2cdd6-cf69-44e7-9b28-c47792505d81", "48faa486-8e73-4c31-b10f-c7f24c115cda")
+	assert.NoError(t, err)
+	wanted := []*model.Shedule{
+		{
+			DateTime: time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC),
+		},
+	}
+	data, _ := json.Marshal(wanted)
+	fmt.Println(string(data))
+	assert.Equal(t, employeeList, wanted)
+}

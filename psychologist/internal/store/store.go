@@ -17,4 +17,5 @@ type Store interface {
 	CheckClientAttachment(employeeID, clientID string) (bool, error)
 	EmployeeList() ([]*model.Employee, error)
 	EmployeesNames(employees []*model.Employee) ([]*model.Employee, error)
+	LessonsListByEmployeeIDAndClientID(employeeID, clientID string) ([]*model.Shedule, error)
 }
