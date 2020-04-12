@@ -251,3 +251,39 @@ func TestStore_LessonCanceled(t *testing.T) {
 		})
 	}
 }
+
+func TestStore_EmployeeList(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       *Store
+		want    []*model.Employee
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			s:    New(),
+			want: []*model.Employee{
+				{
+					ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
+					FamilyName: "Гусев",
+					Name:       "Евгений",
+					Patronomic: "Викторович",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Store{}
+			got, err := s.EmployeeList()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Store.EmployeeList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Store.EmployeeList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

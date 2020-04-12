@@ -14,4 +14,5 @@ type Store interface {
 	LessonIsBusy(employeeID string, dateTime time.Time) (bool, error)
 	LessonCanceled(employeeID string, dateTime time.Time) error
 	CheckClientAttachment(employeeID, clientID string) (bool, error)
+	EmployeeList() ([]*model.Employee, error)
 }

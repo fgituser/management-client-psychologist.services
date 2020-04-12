@@ -15,6 +15,37 @@ type clients struct {
 	EmploeePublicID sql.NullString `db:"employee_public_id"`
 }
 
+type employee struct {
+	FamilyName       sql.NullString `db:"family_name"`
+	FirstName        sql.NullString `db:"first_name"`
+	Patronomic       sql.NullString `db:"patronomic"`
+	EmployeePublicID sql.NullString `db:"employee_public_id"`
+}
+
+//EmployeeList get all employees
+func (s *Store) EmployeeList() ([]*model.Employee, error) {
+	empl := make([]*employee, 0)
+	if err := s.db.SQL.Select(&empl, `
+		select e.family_name, e.first_name, e.patronymic, e.employee_public_id from employee e 
+	`); err != nil {
+		return nil, errors.Wrap(err, "an error accured get all employees")
+	}
+	return employeeToModelEmployee(empl), nil
+}
+
+func employeeToModelEmployee(empl []*employee) []*model.Employee {
+	mempl := make([]*model.Employee, 0)
+	for _, e := range empl {
+		mempl = append(mempl, &model.Employee{
+			ID:         e.EmployeePublicID.String,
+			FamilyName: e.FamilyName.String,
+			Name:       e.FirstName.String,
+			Patronomic: e.Patronomic.String,
+		})
+	}
+	return mempl
+}
+
 //FindClients find all clients
 func (s *Store) FindClients(employeeID string) ([]*model.Client, error) {
 

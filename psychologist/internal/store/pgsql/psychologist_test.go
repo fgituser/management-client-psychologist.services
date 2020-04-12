@@ -164,8 +164,8 @@ func TestStore_LessonCanceled(t *testing.T) {
 	mock.ExpectBegin()
 	mock.ExpectExec(`insert into cancellation_employment \(employment_id\)`).
 		WithArgs(
-			"11e195fc-7010-4e50-8a4d-1d43e9c8e5db",       	//employee_id
-			time.Date(0, 1, 1, 13, 0, 0, 0, time.UTC), 		//calendar_id
+			"11e195fc-7010-4e50-8a4d-1d43e9c8e5db",         //employee_id
+			time.Date(0, 1, 1, 13, 0, 0, 0, time.UTC),      //calendar_id
 			time.Date(2020, 03, 31, 0, 0, 0, 0, time.UTC)). //start_time
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -180,4 +180,33 @@ func TestStore_LessonCanceled(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
+}
+
+func TestStore_EmployeeList(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	rows := sqlmock.NewRows([]string{"family_name", "first_name", "patronomic", "employee_public_id"}).
+		AddRow("Гусев", "Евгений", "Викторович", "48faa486-8e73-4c31-b10f-c7f24c115cda")
+	mock.ExpectQuery(`^select e.family_name, e.first_name, e.patronymic, e.employee_public_id from employee e`).
+		WillReturnRows(rows)
+
+	//mock.ExpectCommit()
+	store := New(&database.DB{SQL: sqlxDB})
+	employeeList, err := store.EmployeeList()
+	assert.NoError(t, err)
+	assert.NotNil(t, employeeList)
+	wanted := []*model.Employee{
+		{
+			ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
+			FamilyName: "Гусев",
+			Name:       "Евгений",
+			Patronomic: "Викторович",
+		},
+	}
+	assert.Equal(t, employeeList, wanted)
 }

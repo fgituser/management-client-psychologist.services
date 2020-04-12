@@ -23,6 +23,9 @@ func testRest(t *testing.T) *restserver {
 			{
 				name:     "psychologist",
 				isActive: true,
+			}, {
+				name:     "admin",
+				isActive: true,
 			},
 		},
 		store:           teststore.New(),
@@ -31,4 +34,3 @@ func testRest(t *testing.T) *restserver {
 	rest.configureRouter()
 	return &rest
 }
-

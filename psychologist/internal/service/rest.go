@@ -52,6 +52,11 @@ func (rs *restserver) configureRouter() {
 			return
 		})
 		rapi.Group(func(remployees chi.Router) {
+			remployees.Group(func(radmin chi.Router) {
+				remployees.Use(rs.checkRole)
+				radmin.Use(rs.checkRoleAdmin)
+				radmin.Get("/employees/list", rs.employeesList)
+			})
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
 			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID)
@@ -66,6 +71,16 @@ func (rs *restserver) configureRouter() {
 			})
 		})
 	})
+}
+
+//get all employyes
+func (rs *restserver) employeesList(w http.ResponseWriter, r *http.Request) {
+	employeeList, err := rs.store.EmployeeList()
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, employeeList)
 }
 
 //Reschedule your occupation. Transfer is possible at any time, including non-working.
@@ -175,9 +190,6 @@ func (rs *restserver) lessonListByEmployeeID(w http.ResponseWriter, r *http.Requ
 	for _, l := range ll {
 		for _, c := range clientsName {
 			if l.Client.ID == c.ID {
-				l.Client.Name = c.Name
-				l.Client.FamilyName = c.FamilyName
-				l.Client.Patronomic = c.Patronomic
 				continue
 			}
 		}
@@ -242,6 +254,23 @@ func (rs *restserver) checkoEmploeeID(next http.Handler) http.Handler {
 			return
 		}
 		next.ServeHTTP(w, r.WithContext(r.Context()))
+	})
+}
+
+func (rs *restserver) checkRoleAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		xrole := r.Header.Get("X-User-Role")
+		if strings.TrimSpace(xrole) != "admin" {
+			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
+			return
+		}
+		for _, ur := range rs.userRoles {
+			if ur.name == xrole && ur.isActive {
+				next.ServeHTTP(w, r.WithContext(r.Context()))
+				return
+			}
+		}
+		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
 	})
 }
 
