@@ -65,6 +65,7 @@ func (rs *restserver) configureRouter() {
 			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID)
 			//TODO: /employees/{employee_id}/client/{client_id}/lessons
 			//TODO: /employees/{employee_id}/name"
+			remployees.Get("/employees/{employee_id}/name", rs.employeeNameByID)
 			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)
 			remployees.Group(func(remployed chi.Router) {
 				remployed.Use(rs.checkAttachment)
@@ -74,6 +75,20 @@ func (rs *restserver) configureRouter() {
 			})
 		})
 	})
+}
+
+func (rs *restserver) employeeNameByID(w http.ResponseWriter, r *http.Request) {
+	employeeID := chi.URLParam(r, "employee_id")
+	employeeName, err := rs.store.EmployeesNames([]*model.Employee{{ID: employeeID}})
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	if employeeName == nil || len(employeeName) != 1 {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, errors.New("not accepted len"))
+		return
+	}
+	render.JSON(w, r, &model.Employee{ID: employeeName[0].ID, FamilyName: employeeName[0].FamilyName, Name: employeeName[0].Name, Patronomic: employeeName[0].Patronomic})
 }
 
 //get employees list by id
