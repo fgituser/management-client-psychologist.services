@@ -16,4 +16,5 @@ type Store interface {
 	LessonCanceled(employeeID string, dateTime time.Time) error
 	CheckClientAttachment(employeeID, clientID string) (bool, error)
 	EmployeeList() ([]*model.Employee, error)
+	EmployeesNames(employees []*model.Employee) ([]*model.Employee, error)
 }

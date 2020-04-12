@@ -2,6 +2,8 @@ package pgsql
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/pkg/database"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -249,4 +252,35 @@ func TestStore_LessonsList(t *testing.T) {
 		},
 	}
 	assert.Equal(t, lessonList, wanted)
+}
+
+func TestStore_EmployeesNames(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	rows := sqlmock.NewRows([]string{"employee_public_id", "family_name", "first_name", "patronymic"}).
+		AddRow("50faa486-8e73-4c31-b10f-c7f24c115cda", "Гусев", "Евгений", "Викторович")
+	mock.ExpectQuery(`^select e.employee_public_id, e.family_name, e.first_name, e.patronymic from employee e`).
+		WithArgs(pq.Array([]string{"50faa486-8e73-4c31-b10f-c7f24c115cda"})).
+		WillReturnRows(rows)
+
+	//mock.ExpectCommit()
+	store := New(&database.DB{SQL: sqlxDB})
+	employeeList, err := store.EmployeesNames([]*model.Employee{{ID: "50faa486-8e73-4c31-b10f-c7f24c115cda"}})
+	assert.NoError(t, err)
+	wanted := []*model.Employee{
+		{
+			ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
+			FamilyName: "Гусев",
+			Name:       "Евгений",
+			Patronomic: "Викторович",
+		},
+	}
+	data, _ := json.Marshal(wanted)
+	fmt.Println(string(data))
+	assert.Equal(t, employeeList, wanted)
 }

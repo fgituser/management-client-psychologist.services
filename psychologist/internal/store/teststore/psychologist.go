@@ -9,6 +9,21 @@ import (
 	"github.com/pkg/errors"
 )
 
+//EmployeesNames ...
+func (s *Store) EmployeesNames(employees []*model.Employee) ([]*model.Employee, error) {
+	if employees == nil {
+		return nil, errors.New("employess is nil")
+	}
+	return []*model.Employee{
+		{
+			ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
+			FamilyName: "Гусев",
+			Name:       "Евгений",
+			Patronomic: "Викторович",
+		},
+	}, nil
+}
+
 //LessonsList get all lessons
 func (s *Store) LessonsList() ([]*model.Employment, error) {
 	return []*model.Employment{

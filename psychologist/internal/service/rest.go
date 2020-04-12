@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -57,6 +58,7 @@ func (rs *restserver) configureRouter() {
 				radmin.Use(rs.checkRoleAdmin)
 				radmin.Get("/employees/list", rs.employeesList)
 				radmin.Get("/lessons/list", rs.lessonsList)
+				radmin.Post("/employees/list_by_id", rs.employeesListByID)
 			})
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
@@ -72,6 +74,27 @@ func (rs *restserver) configureRouter() {
 			})
 		})
 	})
+}
+
+//get employees list by id
+func (rs *restserver) employeesListByID(w http.ResponseWriter, r *http.Request) {
+	var req []struct {
+		ID string `json:"id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	emplID := make([]*model.Employee, 0)
+	for _, rq := range req {
+		emplID = append(emplID, &model.Employee{ID: rq.ID})
+	}
+	employees, err := rs.store.EmployeesNames(emplID)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, employees)
 }
 
 //get all lessons list

@@ -334,3 +334,51 @@ func TestStore_LessonsList(t *testing.T) {
 		})
 	}
 }
+
+func TestStore_EmployeesNames(t *testing.T) {
+	type args struct {
+		employees []*model.Employee
+	}
+	tests := []struct {
+		name    string
+		s       *Store
+		args    args
+		want    []*model.Employee
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			s:    New(),
+			args: args{employees: []*model.Employee{{ID: "50faa486-8e73-4c31-b10f-c7f24c115cda"}}},
+			want: []*model.Employee{
+				{
+					ID:         "50faa486-8e73-4c31-b10f-c7f24c115cda",
+					FamilyName: "Гусев",
+					Name:       "Евгений",
+					Patronomic: "Викторович",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "not valid",
+			s:       New(),
+			args:    args{employees: nil},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Store{}
+			got, err := s.EmployeesNames(tt.args.employees)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Store.EmployeesNames() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Store.EmployeesNames() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

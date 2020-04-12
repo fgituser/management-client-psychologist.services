@@ -7,6 +7,7 @@ import (
 
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/pkg/datetime"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 
@@ -18,7 +19,7 @@ type clients struct {
 type employee struct {
 	FamilyName       sql.NullString `db:"family_name"`
 	FirstName        sql.NullString `db:"first_name"`
-	Patronomic       sql.NullString `db:"patronomic"`
+	Patronymic       sql.NullString `db:"patronymic"`
 	EmployeePublicID sql.NullString `db:"employee_public_id"`
 }
 
@@ -32,7 +33,24 @@ type employment struct {
 	StartTime         sql.NullTime   `db:"start_time"`
 }
 
-//LessonList get all lessons
+//EmployeesNames ...
+func (s *Store) EmployeesNames(employees []*model.Employee) ([]*model.Employee, error){
+	employeeID := make([]string, 0)
+	for _, e := range employees {
+		employeeID = append(employeeID, e.ID)
+	}
+	empl := make([]*employee, 0)
+	if err := s.db.SQL.Select(&empl, `
+		select e.employee_public_id, e.family_name, e.first_name, e.patronymic from employee e
+		 where e.employee_public_id = any ($1)
+	`, pq.Array(employeeID)); err != nil {
+		return nil, errors.Wrap(err, "an error accured get employeesNames")
+	}
+	return employeeToModelEmployee(empl), nil
+}
+
+
+//LessonsList get all lessons
 func (s *Store) LessonsList() ([]*model.Employment, error) {
 	empl := make([]*employment, 0)
 	if err := s.db.SQL.Select(&empl, `
@@ -98,7 +116,7 @@ func employeeToModelEmployee(empl []*employee) []*model.Employee {
 			ID:         e.EmployeePublicID.String,
 			FamilyName: e.FamilyName.String,
 			Name:       e.FirstName.String,
-			Patronomic: e.Patronomic.String,
+			Patronomic: e.Patronymic.String,
 		})
 	}
 	return mempl
@@ -308,7 +326,7 @@ func lessonsListToEmployment(allLessons []*lessonsList) ([]*model.Employment, er
 				})
 			}
 			e = append(e, &model.Employment{
-				Client:   &model.Client{ID: a.ClientPublicID.String},
+				Client:  &model.Client{ID: a.ClientPublicID.String},
 				Shedule: schedule,
 			})
 		}
