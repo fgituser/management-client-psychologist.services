@@ -106,9 +106,9 @@ func Test_restserver_employeesList(t *testing.T) {
 	rr := httptest.NewRecorder()
 	rest.router.ServeHTTP(rr, req)
 	assert.EqualValues(t, rr.Code, 200)
-	//expected := `[{"client":{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"},"shedule":[{"date_time":"2020-03-31T13:00:00+07:00"}]}]`
-	//assert.EqualValues(t, rr.Body.String(), expected)
-	assert.NotNil(t, rr.Body)
+	expected := []byte(`[{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович","clients":[{"id":"50faa486-8e73-4c31-b10f-c7f24c115cda"}]}]`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
+
 }
 
 func Test_restserver_lessonsList(t *testing.T) {

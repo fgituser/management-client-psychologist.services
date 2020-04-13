@@ -21,6 +21,7 @@ type employee struct {
 	FirstName        sql.NullString `db:"first_name"`
 	Patronymic       sql.NullString `db:"patronymic"`
 	EmployeePublicID sql.NullString `db:"employee_public_id"`
+	ClientPublicID   sql.NullString `db:"client_public_id"`
 }
 
 type employment struct {
@@ -31,6 +32,52 @@ type employment struct {
 	ClientPublicID    sql.NullString `db:"client_public_id"`
 	CalendarID        sql.NullTime   `db:"calendar_id"`
 	StartTime         sql.NullTime   `db:"start_time"`
+}
+
+//EmployeeList get all employees
+func (s *Store) EmployeeList() ([]*model.Employee, error) {
+	empl := make([]*employee, 0)
+	if err := s.db.SQL.Select(&empl, `
+	select e.family_name, e.first_name, e.patronymic, e.employee_public_id, c.client_public_id from employee e
+	left join clients c on e.id = c.employee_id 
+	`); err != nil {
+		return nil, errors.Wrap(err, "an error accured get all employees")
+	}
+	return employeeToModelEmployee(empl), nil
+}
+
+func employeeToModelEmployee(empl []*employee) []*model.Employee {
+
+	mempl := make([]*model.Employee, 0)
+
+	//we select only unique employees
+	employeeName := make(map[string]*employee)
+	for _, e := range empl {
+		if _, ok := employeeName[e.EmployeePublicID.String]; !ok {
+			employeeName[e.EmployeePublicID.String] = e
+		}
+	}
+
+	//we go through a cycle of unique employees and the internal cycle we collect all the clients of this employee.
+	for k, v := range employeeName {
+		clients := make([]*model.Client, 0)
+		for _, e := range empl {
+			if k == e.EmployeePublicID.String {
+				clients = append(clients, &model.Client{
+					ID: e.ClientPublicID.String,
+				})
+			}
+		}
+		mempl = append(mempl, &model.Employee{
+			ID:         v.EmployeePublicID.String,
+			FamilyName: v.FamilyName.String,
+			Name:       v.FirstName.String,
+			Patronomic: v.Patronymic.String,
+			Clients:     clients,
+		})
+	}
+
+	return mempl
 }
 
 //LessonsListByEmployeeIDAndClientID ...
@@ -125,30 +172,6 @@ func employmentToModelEmployment(empl []*employment) ([]*model.Employment, error
 		}
 	}
 	return mempl, nil
-}
-
-//EmployeeList get all employees
-func (s *Store) EmployeeList() ([]*model.Employee, error) {
-	empl := make([]*employee, 0)
-	if err := s.db.SQL.Select(&empl, `
-		select e.family_name, e.first_name, e.patronymic, e.employee_public_id from employee e 
-	`); err != nil {
-		return nil, errors.Wrap(err, "an error accured get all employees")
-	}
-	return employeeToModelEmployee(empl), nil
-}
-
-func employeeToModelEmployee(empl []*employee) []*model.Employee {
-	mempl := make([]*model.Employee, 0)
-	for _, e := range empl {
-		mempl = append(mempl, &model.Employee{
-			ID:         e.EmployeePublicID.String,
-			FamilyName: e.FamilyName.String,
-			Name:       e.FirstName.String,
-			Patronomic: e.Patronymic.String,
-		})
-	}
-	return mempl
 }
 
 //FindClients find all clients

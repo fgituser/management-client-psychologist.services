@@ -193,9 +193,11 @@ func TestStore_EmployeeList(t *testing.T) {
 	defer mockDB.Close()
 	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
 
-	rows := sqlmock.NewRows([]string{"family_name", "first_name", "patronymic", "employee_public_id"}).
-		AddRow("Гусев", "Евгений", "Викторович", "48faa486-8e73-4c31-b10f-c7f24c115cda")
-	mock.ExpectQuery(`^select e.family_name, e.first_name, e.patronymic, e.employee_public_id from employee e`).
+	rows := sqlmock.NewRows([]string{"family_name", "first_name", "patronymic", "employee_public_id", "client_public_id"}).
+		AddRow("Гусев", "Евгений", "Викторович", "48faa486-8e73-4c31-b10f-c7f24c115cda", "50faa486-8e73-4c31-b10f-c7f24c115cda").
+		AddRow("Демидов", "Юрий", "Сергеевич", "10faa486-8e73-4c31-b10f-c7f24c115cda", "11faa486-8e73-4c31-b10f-c7f24c115cda").
+		AddRow("Гусев", "Евгений", "Викторович", "48faa486-8e73-4c31-b10f-c7f24c115cda", "90faa486-8e73-4c31-b10f-c7f24c115cda")
+	mock.ExpectQuery(`^select e.family_name, e.first_name, e.patronymic, e.employee_public_id, c.client_public_id from employee e`).
 		WillReturnRows(rows)
 
 	//mock.ExpectCommit()
@@ -209,6 +211,25 @@ func TestStore_EmployeeList(t *testing.T) {
 			FamilyName: "Гусев",
 			Name:       "Евгений",
 			Patronomic: "Викторович",
+			Clients: []*model.Client{
+				{
+					ID: "50faa486-8e73-4c31-b10f-c7f24c115cda",
+				},
+				{
+					ID: "90faa486-8e73-4c31-b10f-c7f24c115cda",
+				},
+			},
+		},
+		{
+			ID:         "10faa486-8e73-4c31-b10f-c7f24c115cda",
+			FamilyName: "Демидов",
+			Name:       "Юрий",
+			Patronomic: "Сергеевич",
+			Clients: []*model.Client{
+				{
+					ID: "11faa486-8e73-4c31-b10f-c7f24c115cda",
+				},
+			},
 		},
 	}
 	assert.Equal(t, employeeList, wanted)
