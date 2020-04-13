@@ -7,6 +7,24 @@ import (
 	"github.com/pkg/errors"
 )
 
+//ClientsNames get clients name
+func (s *Store) ClientsNames(client []*model.Client) ([]*model.Client, error) {
+	if client == nil {
+		return nil, errors.New("[]*client is nil")
+	}
+	return []*model.Client{
+		{
+			ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
+			FamilyName: "Гусев",
+			Name:       "Евгений",
+			Patronomic: "Викторович",
+			Psychologist: &model.Psychologist{
+				ID: "75d2cdd6-cf69-44e7-9b28-c47792505d81",
+			},
+		},
+	}, nil
+}
+
 //ClientsList ...
 func (s *Store) ClientsList() ([]*model.Client, error) {
 	return []*model.Client{

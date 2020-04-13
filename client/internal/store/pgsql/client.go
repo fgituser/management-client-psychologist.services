@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fgituser/management-client-psychologist.services/client/internal/model"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 
@@ -14,6 +15,23 @@ type clients struct {
 	FirstName            sql.NullString `db:"first_name"`
 	Patronomic           sql.NullString `db:"patronomic"`
 	PsychologistPublicID sql.NullString `db:"psychologist_public_id"`
+}
+
+//ClientsNames get clients name
+func (s *Store) ClientsNames(client []*model.Client) ([]*model.Client, error) {
+	clientsID := make([]string, 0)
+	for _, c := range client {
+		clientsID = append(clientsID, c.ID)
+	}
+	cln := make([]*clients, 0)
+	if err := s.db.SQL.Select(&cln, `
+		select c.client_public_id, c.family_name, c.first_name, c.patronymic, c.psychologist_public_id 
+		from clients c
+		where c.client_public_id = any ($1)
+	`, pq.Array(clientsID)); err != nil {
+		return nil, errors.Wrap(err, "an error accured get clients")
+	}
+	return convertClientDtoToModelClient(cln), nil
 }
 
 //ClientsList get all clients and psychologistID

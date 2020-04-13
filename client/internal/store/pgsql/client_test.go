@@ -1,12 +1,15 @@
 package pgsql
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/fgituser/management-client-psychologist.services/client/internal/model"
 	"github.com/fgituser/management-client-psychologist.services/client/pkg/database"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -124,5 +127,39 @@ func TestStore_ClientsList(t *testing.T) {
 			},
 		},
 	}
+	assert.Equal(t, wantedCLientsName, clientsList)
+}
+
+func TestStore_ClientsNames(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer mockDB.Close()
+	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
+
+	rows := sqlmock.NewRows([]string{"client_public_id", "family_name", "first_name", "patronomic", "psychologist_public_id"}).
+		AddRow("48faa486-8e73-4c31-b10f-c7f24c115cda", "Гусев", "Евгений", "Викторович", "75d2cdd6-cf69-44e7-9b28-c47792505d81")
+	mock.ExpectQuery(`^select c.client_public_id, c.family_name, c.first_name, c.patronymic, c.psychologist_public_id`).
+		WithArgs(pq.Array([]string{"48faa486-8e73-4c31-b10f-c7f24c115cda"})).
+		WillReturnRows(rows)
+
+	store := New(&database.DB{SQL: sqlxDB})
+	clientsList, err := store.ClientsNames([]*model.Client{{ID: "48faa486-8e73-4c31-b10f-c7f24c115cda"}})
+	assert.NoError(t, err)
+	assert.NotNil(t, clientsList)
+	wantedCLientsName := []*model.Client{
+		{
+			ID:         "48faa486-8e73-4c31-b10f-c7f24c115cda",
+			FamilyName: "Гусев",
+			Name:       "Евгений",
+			Patronomic: "Викторович",
+			Psychologist: &model.Psychologist{
+				ID: "75d2cdd6-cf69-44e7-9b28-c47792505d81",
+			},
+		},
+	}
+	data, _ := json.Marshal(clientsList)
+	fmt.Println(string(data))
 	assert.Equal(t, wantedCLientsName, clientsList)
 }
