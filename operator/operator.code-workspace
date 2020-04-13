@@ -1,0 +1,35 @@
+{
+	"folders": [
+		{
+			"path": "/home/localadmin/development/management-client-psychologist.services/operator"
+		}
+	],
+	"settings": {
+		"editor.fontLigatures": true,
+		"diffEditor.ignoreTrimWhitespace": false,
+		"workbench.iconTheme": "vscode-icons",
+		"files.autoSave": "afterDelay",
+		"sync.gist": "14e4226f30bed354266ae656bd97851d",
+		"window.titleBarStyle": "custom",
+		"cSpell.userWords": [
+			"Incomming",
+			"komiac",
+			"models",
+			"netrica"
+		],
+		"editor.renderControlCharacters": true,
+		"window.menuBarVisibility": "default",
+		"workbench.sideBar.location": "left",
+		"git.autofetch": true,
+		//"window.zoomLevel": 1,
+		"go.useLanguageServer": true,
+		"explorer.confirmDragAndDrop": false,
+		"go.testFlags": ["-count=1"],
+		"go.testEnvFile": "/home/localadmin/development/management-client-psychologist.services/operator/env.sh",
+		"powermode.presets": "flames",
+		"powermode.explosionDuration": 200,
+		"editor.maxTokenizationLineLength": 3000,
+		"editor.minimap.maxColumn": 50,
+		"editor.minimap.enabled": false
+	}
+}
