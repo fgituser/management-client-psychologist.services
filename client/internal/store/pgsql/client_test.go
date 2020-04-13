@@ -127,6 +127,7 @@ func TestStore_ClientsList(t *testing.T) {
 			},
 		},
 	}
+
 	assert.Equal(t, wantedCLientsName, clientsList)
 }
 
