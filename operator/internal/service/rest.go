@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -59,9 +60,69 @@ func (rs *restserver) configureRouter() {
 				radmin.Get("/clients/list", rs.clientsList)
 				radmin.Get("/psychologist/list", rs.psychologistList)
 				radmin.Get("/lesson/list", rs.lessonList)
+				radmin.Post("/lessons/pyschologist/{psychologist_id}/client/{client_id}/datetime/{date_time}/set", rs.setLesson)
+				radmin.Put("/lesson/{date_time}/psychologist/{psychologist_id}/client/{client_id}/datetime/{new_date_time}/reschedule", rs.rescheduleLesson)
 			})
 		})
 	})
+}
+
+//Reschedule an activity. The transfer is possible at any time, including after hours of the psychologist.
+func (rs *restserver) rescheduleLesson(w http.ResponseWriter, r *http.Request) {
+	psychologistID := chi.URLParam(r, "psychologist_id")
+	clientID := chi.URLParam(r, "client_id")
+
+	paramDateTimeOld, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	paramDateTimeNew, err := url.QueryUnescape(chi.URLParam(r, "new_date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetimeOld, err := time.Parse("2006-01-02 15:04", paramDateTimeOld)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetimeNew, err := time.Parse("2006-01-02 15:04", paramDateTimeNew)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	if err := rs.transportPsychologist.LessonReschedule(psychologistID, clientID, lessonDatetimeOld, lessonDatetimeNew); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.NoContent(w, r)
+}
+
+//Assign a lesson between the client and his psychologist. Recording is possible at any time, including after hours of a psychologist.
+func (rs *restserver) setLesson(w http.ResponseWriter, r *http.Request) {
+	psychologistID := chi.URLParam(r, "psychologist_id")
+	clientID := chi.URLParam(r, "client_id")
+
+	dateTime, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetime, err := time.Parse("2006-01-02 15:04", dateTime)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	if err := rs.transportPsychologist.LessonSet(psychologistID, clientID, lessonDatetime); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.NoContent(w, r)
 }
 
 //Get a list of classes: date, name of client, name of psychologist.
