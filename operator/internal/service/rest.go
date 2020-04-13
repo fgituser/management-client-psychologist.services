@@ -58,9 +58,38 @@ func (rs *restserver) configureRouter() {
 				radmin.Use(rs.checkRoleAdmin)
 				radmin.Get("/clients/list", rs.clientsList)
 				radmin.Get("/psychologist/list", rs.psychologistList)
+				radmin.Get("/lesson/list", rs.lessonList)
 			})
 		})
 	})
+}
+
+//Get a list of classes: date, name of client, name of psychologist.
+func (rs *restserver) lessonList(w http.ResponseWriter, r *http.Request) {
+	lessonList, err := rs.transportPsychologist.LessonList()
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	clientsID := make([]*model.Client, 0)
+	for _, l := range lessonList {
+		clientsID = append(clientsID, &model.Client{ID: l.Client.ID})
+	}
+	clientsName, err := rs.transportClient.ClientsListByID(clientsID)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	for _, l := range lessonList {
+		client := findClientName(l.Client.ID, clientsName)
+		if client == nil {
+			continue
+		}
+		l.Client.FamilyName = client.FamilyName
+		l.Client.Name = client.Name
+		l.Client.Patronomic = client.Patronomic
+	}
+	render.JSON(w, r, lessonList)
 }
 
 //Get a list of clients: name of client, name of psychologist, assigned client.

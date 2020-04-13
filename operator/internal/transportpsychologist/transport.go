@@ -6,4 +6,5 @@ import "github.com/fgituser/management-client-psychologist.services/operator/int
 type Transport interface {
 	PsychologistListByID(psychologist []*model.Psychologist) ([]*model.Psychologist, error)
 	PsychologistList() ([]*model.Psychologist, error)
+	LessonList() ([]*model.Employment, error)
 }

@@ -10,5 +10,6 @@ type Employment struct {
 
 //Shedule ...
 type Shedule struct {
-	DateTime time.Time `json:"date_time"`
+	Psychologist *Psychologist `json:"psychologist,omitempty"`
+	DateTime     time.Time     `json:"date_time"`
 }
