@@ -236,7 +236,7 @@ func (s *Store) LessonsListByEmployeeID(employeeID string) ([]*model.Employment,
 }
 
 //SetLesson Schedule an activity with your client. Recording is possible at any time, including non-working
-func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error {
+func (s *Store) SetLesson(employeeID, clientID string,  dateTime time.Time) error {
 	if strings.TrimSpace(employeeID) == "" || strings.TrimSpace(clientID) == "" {
 		return errors.Errorf("an error accurred while set lesson, empty parametrs employeID:%v clientID:%v", employeeID, clientID)
 	}
@@ -244,6 +244,7 @@ func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error
 	if err != nil {
 		return errors.Wrap(err, "an error accurred while set lessons")
 	}
+
 
 	tx := s.db.SQL.MustBegin()
 	_, err = tx.Exec(`insert into employment (client_id, schedule_id)
