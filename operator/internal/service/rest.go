@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fgituser/management-client-psychologist.services/operator/internal/model"
 	"github.com/fgituser/management-client-psychologist.services/operator/internal/transport"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -50,10 +51,44 @@ func (rs *restserver) configureRouter() {
 
 			rclients.Group(func(radmin chi.Router) {
 				radmin.Use(rs.checkRoleAdmin)
-
+				radmin.Get("/clients/list", rs.clientsList)
 			})
 		})
 	})
+}
+
+//Get a list of clients: name of client, name of psychologist, assigned client.
+func (rs *restserver) clientsList(w http.ResponseWriter, r *http.Request) {
+	clientsList, err := rs.transportPsychologist.ClientsList()
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	psychologistID := make([]*model.Psychologist, 0)
+	for _, c := range clientsList {
+		psychologistID = append(psychologistID, &model.Psychologist{
+			ID: c.Psychologist.ID,
+		})
+	}
+
+	psychologistList, err := rs.transportPsychologist.PsychologistListByID(psychologistID)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	for _, c := range clientsList {
+		for _, p := range psychologistList {
+			if c.Psychologist.ID == p.ID {
+				c.Psychologist.FamilyName = p.FamilyName
+				c.Psychologist.Name = p.Name
+				c.Psychologist.Patronomic = p.Patronomic
+			}
+		}
+	}
+
+	render.JSON(w, r, clientsList)
 }
 
 func (rs *restserver) checkRole(next http.Handler) http.Handler {

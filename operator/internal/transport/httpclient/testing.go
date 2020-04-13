@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+//TestNewHTTPClient ...
 func TestNewHTTPClient(t *testing.T) *HTTPClient {
 	t.Helper()
 

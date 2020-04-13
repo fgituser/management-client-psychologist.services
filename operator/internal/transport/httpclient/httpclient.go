@@ -10,6 +10,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	userRole = "admin"
+)
+
 //HTTPClient ...
 type HTTPClient struct {
 	baseURL   string
