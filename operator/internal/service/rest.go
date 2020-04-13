@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/fgituser/management-client-psychologist.services/operator/internal/model"
-	"github.com/fgituser/management-client-psychologist.services/operator/internal/transport"
+	"github.com/fgituser/management-client-psychologist.services/operator/internal/transportclient"
+	"github.com/fgituser/management-client-psychologist.services/operator/internal/transportpsychologist"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
@@ -18,14 +19,18 @@ type restserver struct {
 	router                chi.Router
 	logger                *logrus.Logger
 	userRoles             []*UserRole
-	transportPsychologist transport.Transport
+	transportPsychologist transportpsychologist.Transport
+	transportClient       transportclient.Transport
 }
 
-func newRESTServer(router chi.Router, transportPsychologist transport.Transport) *restserver {
+func newRESTServer(router chi.Router,
+	transportPsychologist transportpsychologist.Transport,
+	transportClient transportclient.Transport) *restserver {
 	r := &restserver{
 		router:                router,
 		logger:                logrus.New(),
 		transportPsychologist: transportPsychologist,
+		transportClient:       transportClient,
 	}
 
 	r.configureRouter()
@@ -52,14 +57,49 @@ func (rs *restserver) configureRouter() {
 			rclients.Group(func(radmin chi.Router) {
 				radmin.Use(rs.checkRoleAdmin)
 				radmin.Get("/clients/list", rs.clientsList)
+				radmin.Get("/psychologist/list", rs.psychologistList)
 			})
 		})
 	})
 }
 
 //Get a list of clients: name of client, name of psychologist, assigned client.
+func (rs *restserver) psychologistList(w http.ResponseWriter, r *http.Request) {
+	psychologist, err := rs.transportPsychologist.PsychologistList()
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	clientsID := make([]*model.Client, 0)
+	for _, p := range psychologist {
+		for _, c := range p.Clients {
+			clientsID = append(clientsID, &model.Client{ID: c.ID})
+		}
+	}
+	clientsName, err := rs.transportClient.ClientsListByID(clientsID)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	for _, p := range psychologist {
+		for _, c := range p.Clients {
+			client := findClientName(c.ID, clientsName)
+			if client == nil {
+				continue
+			}
+			c.FamilyName = client.FamilyName
+			c.Name = client.Name
+			c.Patronomic = client.Patronomic
+		}
+	}
+	render.JSON(w, r, psychologist)
+}
+
+//Get a list of clients: name of client, name of psychologist, assigned client.
 func (rs *restserver) clientsList(w http.ResponseWriter, r *http.Request) {
-	clientsList, err := rs.transportPsychologist.ClientsList()
+	clientsList, err := rs.transportClient.ClientsList()
 	if err != nil {
 		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
 		return
@@ -123,6 +163,20 @@ func (rs *restserver) checkRoleAdmin(next http.Handler) http.Handler {
 		}
 		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
 	})
+}
+
+func findClientName(clientsID string, clietnsName []*model.Client) *model.Client {
+	for _, c := range clietnsName {
+		if clientsID == c.ID {
+			return &model.Client{
+				ID:         c.ID,
+				FamilyName: c.FamilyName,
+				Name:       c.Name,
+				Patronomic: c.Patronomic,
+			}
+		}
+	}
+	return nil
 }
 
 func isTheTime(t time.Time) bool {

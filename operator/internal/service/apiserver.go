@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/fgituser/management-client-psychologist.services/operator/internal/config"
-	"github.com/fgituser/management-client-psychologist.services/operator/internal/transport/httpclient"
+	trclient "github.com/fgituser/management-client-psychologist.services/operator/internal/transportclient/httpclient"
+	trpsychologist "github.com/fgituser/management-client-psychologist.services/operator/internal/transportpsychologist/httpclient"
 	"github.com/fgituser/management-client-psychologist.services/operator/pkg/server"
 	"github.com/pkg/errors"
 )
@@ -13,12 +14,16 @@ import (
 func Start(cfg *config.Configuration) error {
 	router := server.New()
 
-	tranportSvc, err := httpclient.New(cfg.URLServices.ClientsSvcBaseURL, "go client", &http.Client{})
+	tranportSvcClient, err := trclient.New(cfg.URLServices.ClientsSvcBaseURL, "go client", &http.Client{})
+	if err != nil {
+		return errors.Wrap(err, "an error accured while start api server")
+	}
+	tranportSvcPsychologist, err := trpsychologist.New(cfg.URLServices.PsychologistSvcBaseURL, "go client", &http.Client{})
 	if err != nil {
 		return errors.Wrap(err, "an error accured while start api server")
 	}
 
-	restServer := newRESTServer(router, tranportSvc)
+	restServer := newRESTServer(router, tranportSvcPsychologist, tranportSvcClient)
 
 	server.Start(restServer.router, restServer.logger, &server.Config{
 		Port:                cfg.Server.Port,

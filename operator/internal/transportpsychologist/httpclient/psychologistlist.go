@@ -45,3 +45,43 @@ func responsePsychologistListByIDToModelPsychologist(res []*responsePsychologist
 	}
 	return psychologist
 }
+
+type responsePsychologistList struct {
+	ID         string `json:"id,omitempty"`
+	FamilyName string `json:"family_name,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Patronomic string `json:"patronomic,omitempty"`
+	Clients    []struct {
+		ID string `json:"id"`
+	} `json:"clients"`
+}
+
+//PsychologistList get all psychologist
+func (h *HTTPClient) PsychologistList() ([]*model.Psychologist, error) {
+	res, err := h.Do(nil, http.MethodGet, "/employees/list", userRole)
+	if err != nil {
+		return nil, errors.Wrap(err, "an error accured while get all psychologist")
+	}
+
+	pch := make([]*responsePsychologistList, 0)
+	if err := json.Unmarshal(res, &pch); err != nil {
+		return nil, errors.Wrap(err, "an error accured while get all psychologist")
+	}
+	return responsePsychologistListToModelPsychologist(pch), nil
+}
+
+func responsePsychologistListToModelPsychologist(res []*responsePsychologistList) []*model.Psychologist {
+	psychologist := make([]*model.Psychologist, 0)
+	for index, r := range res {
+		psychologist = append(psychologist, &model.Psychologist{
+			ID:         r.ID,
+			FamilyName: r.FamilyName,
+			Name:       r.Name,
+			Patronomic: r.Patronomic,
+		})
+		for _, c := range r.Clients {
+			psychologist[index].Clients = append(psychologist[index].Clients, &model.Client{ID: c.ID})
+		}
+	}
+	return psychologist
+}

@@ -47,3 +47,24 @@ func responseClientsListToModelClient(res []*responseClientsList) []*model.Clien
 	}
 	return clients
 }
+
+//ClientsListByID get clients from id
+func (h *HTTPClient) ClientsListByID(clientsID []*model.Client) ([]*model.Client, error) {
+	var req []struct {
+		ID string `json:"id"`
+	}
+	body, err := json.Marshal(&req)
+	if err != nil {
+		return nil, errors.Wrap(err, "an error occured while get clients by id")
+	}
+	res, err := h.Do(body, http.MethodPost, "/client/list_by_id", userRole)
+	if err != nil {
+		return nil, errors.Wrap(err, "an error occured while get clients by id")
+	}
+
+	clients := make([]*responseClientsList, 0)
+	if err := json.Unmarshal(res, &clients); err != nil {
+		return nil, errors.Wrap(err, "an error occured while get clients by id")
+	}
+	return responseClientsListToModelClient(clients), nil
+}

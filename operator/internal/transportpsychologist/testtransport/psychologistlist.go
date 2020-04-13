@@ -19,3 +19,20 @@ func (h *HTTPClient) PsychologistListByID(psychologist []*model.Psychologist) ([
 		},
 	}, nil
 }
+
+//PsychologistList get all psychologist
+func (h *HTTPClient) PsychologistList() ([]*model.Psychologist, error) {
+	return []*model.Psychologist{
+		{
+			ID:         "60faa486-8e73-4c31-b10f-c7f24c115cda",
+			FamilyName: "Себастьянов",
+			Name:       "Виктор",
+			Patronomic: "Андреевич",
+			Clients: []*model.Client{
+				{
+					ID: "50faa486-8e73-4c31-b10f-c7f24c115cda",
+				},
+			},
+		},
+	}, nil
+}

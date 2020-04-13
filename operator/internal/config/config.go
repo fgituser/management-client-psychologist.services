@@ -22,7 +22,7 @@ func Load(path string) (*Configuration, error) {
 
 // Configuration holds data for configuring application
 type Configuration struct {
-	Server *Server   `yaml:"server,omitempty"`
+	Server      *Server      `yaml:"server,omitempty"`
 	URLServices *URLServices `yaml:"url_services"`
 }
 
@@ -34,8 +34,8 @@ type Server struct {
 	WriteTimeout int    `yaml:"write_timeout_seconds,omitempty"`
 }
 
-
 //URLServices url address other services
 type URLServices struct {
-	ClientsSvcBaseURL string `yaml:"client_svc_base_url"`
+	ClientsSvcBaseURL      string `yaml:"client_svc_base_url"`
+	PsychologistSvcBaseURL string `yaml:"psychologist_svc_base_url"`
 }

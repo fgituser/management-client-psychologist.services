@@ -69,3 +69,44 @@ func TestHTTPClient_PsychologistListByID(t *testing.T) {
 		})
 	}
 }
+
+func TestHTTPClient_PsychologistList(t *testing.T) {
+	tests := []struct {
+		name    string
+		h       *HTTPClient
+		want    []*model.Psychologist
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			h:    New(),
+			want: []*model.Psychologist{
+				{
+					ID:         "60faa486-8e73-4c31-b10f-c7f24c115cda",
+					FamilyName: "Себастьянов",
+					Name:       "Виктор",
+					Patronomic: "Андреевич",
+					Clients: []*model.Client{
+						{
+							ID: "50faa486-8e73-4c31-b10f-c7f24c115cda",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &HTTPClient{}
+			got, err := h.PsychologistList()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("HTTPClient.PsychologistList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HTTPClient.PsychologistList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
