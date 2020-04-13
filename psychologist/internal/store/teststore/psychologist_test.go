@@ -268,6 +268,11 @@ func TestStore_EmployeeList(t *testing.T) {
 					FamilyName: "Гусев",
 					Name:       "Евгений",
 					Patronomic: "Викторович",
+					Clients: []*model.Client{
+						{
+							ID: "50faa486-8e73-4c31-b10f-c7f24c115cda",
+						},
+					},
 				},
 			},
 			wantErr: false,
@@ -407,17 +412,17 @@ func TestStore_LessonsListByEmployeeIDAndClientID(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "not valid employeeID",
-			s:    New(),
-			args: args{employeeID: "", clientID: "48faa486-8e73-4c31-b10f-c7f24c115cda"},
-			want: nil,
+			name:    "not valid employeeID",
+			s:       New(),
+			args:    args{employeeID: "", clientID: "48faa486-8e73-4c31-b10f-c7f24c115cda"},
+			want:    nil,
 			wantErr: true,
 		},
 		{
-			name: "not valid clientID",
-			s:    New(),
-			args: args{employeeID: "75d2cdd6-cf69-44e7-9b28-c47792505d81", clientID: ""},
-			want: nil,
+			name:    "not valid clientID",
+			s:       New(),
+			args:    args{employeeID: "75d2cdd6-cf69-44e7-9b28-c47792505d81", clientID: ""},
+			want:    nil,
 			wantErr: true,
 		},
 	}

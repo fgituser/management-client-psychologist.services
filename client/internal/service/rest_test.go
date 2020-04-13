@@ -122,5 +122,21 @@ func Test_restserver_clientsList(t *testing.T) {
 	rr := httptest.NewRecorder()
 	rest.router.ServeHTTP(rr, req)
 	assert.EqualValues(t, rr.Code, 200)
-	assert.NotNil(t, rr.Body)
+	expected := []byte(`[{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович","psychologist":{"id":"75d2cdd6-cf69-44e7-9b28-c47792505d81"}}]`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
+}
+
+func Test_restserver_clientsListByID(t *testing.T) {
+	rest := testRest(t)
+
+	req, err := http.NewRequest("POST", "/api/v1/client/list_by_id", bytes.NewBuffer([]byte(`[{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda"}]`)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-User-Role", "admin")
+	rr := httptest.NewRecorder()
+	rest.router.ServeHTTP(rr, req)
+	assert.EqualValues(t, rr.Code, 200)
+	expected := []byte(`[{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович","psychologist":{"id":"75d2cdd6-cf69-44e7-9b28-c47792505d81"}}]`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
 }

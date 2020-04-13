@@ -8,4 +8,5 @@ type Store interface {
 	ClientsName(pychologistID string) ([]*model.Client, error)
 	PsychologistID(clientID string) (id string, err error)
 	ClientsList() ([]*model.Client, error)
+	ClientsNames(clients []*model.Client) ([]*model.Client, error)
 }

@@ -6,8 +6,7 @@ services:
       context: .
       dockerfile: psychologist/Dockerfile
     environment:
-      - APP_ENV=conf.prod
-      - APP_DSN=postgres://psychologist-db/psychologist?sslmode=disable&user=postgres&password=postgres
+      - APP_ENV=local
     restart: always
     volumes:
       - /tmp/app:/var/log/app

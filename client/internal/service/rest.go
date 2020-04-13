@@ -1,12 +1,14 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/fgituser/management-client-psychologist.services/client/internal/model"
 	"github.com/fgituser/management-client-psychologist.services/client/internal/store"
 	"github.com/fgituser/management-client-psychologist.services/client/internal/transport"
 	"github.com/go-chi/chi"
@@ -61,27 +63,34 @@ func (rs *restserver) configureRouter() {
 			rclients.Group(func(radmin chi.Router) {
 				radmin.Use(rs.checkRoleAdmin)
 				radmin.Get("/client/list", rs.clientsList)
-				// radmin.Get("/client/list/by_id", rs.clientsListByID)
+				radmin.Post("/client/list_by_id", rs.clientsListByID)
 			})
 		})
 	})
 }
 
-// // get clients list by id
-// func (rs *restserver) clientsListByID(w http.ResponseWriter, r *http.Request) {
-// 	var req []struct {
-// 		ID string `json:"id"`
-// 	}
+// get clients list by id
+func (rs *restserver) clientsListByID(w http.ResponseWriter, r *http.Request) {
+	var req []struct {
+		ID string `json:"id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	clientsID := make([]*model.Client, 0)
+	for _, rq := range req {
+		clientsID = append(clientsID, &model.Client{ID: rq.ID})
+	}
 
-// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-// 		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
-// 		return
-// 	}
-// 	clietsID := make([]*model.Client, 0)
-// 	for _, rr := range req {
-// 		clietsID,
-// 	}
-// }
+	clietns, err := rs.store.ClientsNames(clientsID)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.JSON(w, r, clietns)
+
+}
 
 //Get clients list
 func (rs *restserver) clientsList(w http.ResponseWriter, r *http.Request) {
