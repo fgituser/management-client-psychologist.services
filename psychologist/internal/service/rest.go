@@ -59,6 +59,7 @@ func (rs *restserver) configureRouter() {
 				radmin.Get("/employees/list", rs.employeesList)
 				radmin.Get("/lessons/list", rs.lessonsList)
 				radmin.Post("/employees/list_by_id", rs.employeesListByID)
+				radmin.Delete("/lessons/client/employee/{employee_id}/dateteme/{date_time}/delete", rs.lessonDelete)
 			})
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
@@ -74,6 +75,28 @@ func (rs *restserver) configureRouter() {
 			})
 		})
 	})
+}
+
+func (rs *restserver) lessonDelete(w http.ResponseWriter, r *http.Request) {
+	employeeID := chi.URLParam(r, "employee_id")
+
+	dateTimeParam, err := url.QueryUnescape(chi.URLParam(r, "date_time"))
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	lessonDatetime, err := time.Parse("2006-01-02 15:04", dateTimeParam)
+	if err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+
+	if err := rs.store.LessonCanceled(employeeID, lessonDatetime); err != nil {
+		rs.sendErrorJSON(w, r, 500, ErrInternal, err)
+		return
+	}
+	render.NoContent(w, r)
 }
 
 //get lessons by employee id and cleint id

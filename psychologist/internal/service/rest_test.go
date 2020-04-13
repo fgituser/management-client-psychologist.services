@@ -166,3 +166,16 @@ func Test_restserver_lessonByEmployeeIDAndClientID(t *testing.T) {
 	expected := []byte(`[{"date_time":"2020-03-31T13:00:00Z"}]`)
 	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
 }
+
+func Test_restserver_lessonDelete(t *testing.T) {
+	rest := testRest(t)
+	req, err := http.NewRequest("DELETE", "/api/v1/lessons/client/employee/75d2cdd6-cf69-44e7-9b28-c47792505d81/dateteme/2020-03-31%2014%3A00/delete", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-User-Role", "admin")
+	rr := httptest.NewRecorder()
+	rest.router.ServeHTTP(rr, req)
+	assert.EqualValues(t, rr.Code, 204)
+}
