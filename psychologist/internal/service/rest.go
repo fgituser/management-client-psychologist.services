@@ -41,7 +41,7 @@ func newRESTServer(router chi.Router, userRoles []*userRole, str store.Store, tr
 func (rs *restserver) configureRouter() {
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 		AllowedHeaders:   []string{"Content-Type"},
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
@@ -57,21 +57,21 @@ func (rs *restserver) configureRouter() {
 			remployees.Group(func(radmin chi.Router) {
 				radmin.Use(rs.checkRole)
 				radmin.Use(rs.checkRoleAdmin)
-				radmin.Get("/employees/list", rs.employeesList)
-				radmin.Get("/lessons/list", rs.lessonsList)
-				radmin.Post("/employees/list_by_id", rs.employeesListByID)
+				radmin.Get("/employees/list", rs.employeesList) //+
+				radmin.Get("/lessons/list", rs.lessonsList) //+
+				radmin.Post("/employees/list_by_id", rs.employeesListByID) //+
 				radmin.Delete("/lessons/client/employee/{employee_id}/dateteme/{date_time}/delete", rs.lessonDelete)
 			})
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
-			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID)
-			remployees.Get("/employees/{employee_id}/client/{client_id}/lessons", rs.lessonByEmployeeIDAndClientID)
-			remployees.Get("/employees/{employee_id}/name", rs.employeeNameByID)
-			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)
+			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID) //+
+			remployees.Get("/employees/{employee_id}/client/{client_id}/lessons", rs.lessonByEmployeeIDAndClientID) //+
+			remployees.Get("/employees/{employee_id}/name", rs.employeeNameByID) //+
+			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID) //+
 			remployees.Group(func(remployed chi.Router) {
 				remployed.Use(rs.checkAttachment)
 				remployed.Use(rs.lessonIsBusy)
-				remployed.Post("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/set", rs.lessonSet)
+				remployed.Post("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/set", rs.lessonSet) //+
 				remployed.Put("/employees/{employee_id}/clients/{client_id}/lessons/datetime/{date_time}/reschedule/datetime/{new_date_time}/set", rs.lessonReschedule)
 			})
 		})
@@ -275,6 +275,9 @@ func (rs *restserver) lessonListByEmployeeID(w http.ResponseWriter, r *http.Requ
 	for _, l := range ll {
 		for _, c := range clientsName {
 			if l.Client.ID == c.ID {
+				l.Client.Name = c.Name
+				l.Client.FamilyName = c.FamilyName
+				l.Client.Patronomic = c.Patronomic
 				continue
 			}
 		}

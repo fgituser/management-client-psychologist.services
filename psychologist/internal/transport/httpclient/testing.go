@@ -55,18 +55,6 @@ func TestResponseGetNamesById(t *testing.T) ([]byte, []*responseGetNamesByID) {
 			Name:       "Евгений",
 			Patronomic: "Викторович",
 		},
-		{
-			ClinetID:   "50faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Шмельцер",
-			Name:       "Вячеслав",
-			Patronomic: "Николаевич",
-		},
-		{
-			ClinetID:   "60faa486-8e73-4c31-b10f-c7f24c115cda",
-			FamilyName: "Виевская",
-			Name:       "Анастасия",
-			Patronomic: "Федоровна",
-		},
 	}
 	data, err := json.Marshal(&clients)
 	if err != nil {
