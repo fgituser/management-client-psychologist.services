@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	"github.com/fgituser/management-client-psychologist.services/client/internal/config"
 	"github.com/fgituser/management-client-psychologist.services/client/internal/service"
@@ -13,6 +14,7 @@ func main() {
 
 	cfg, err := config.Load(*cfgPath)
 	checkErr(err)
+	log.Println("----------- ", cfg.Server.Port)
 	checkErr(service.Start(cfg))
 
 }

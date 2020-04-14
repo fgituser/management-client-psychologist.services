@@ -22,9 +22,10 @@ func Load(path string) (*Configuration, error) {
 
 // Configuration holds data for configuring application
 type Configuration struct {
-	Server *Server   `yaml:"server,omitempty"`
-	DB     *Database `yaml:"database,omitempty"`
-	URLServices *URLServices `yaml:"url_services"`
+	Server      *Server      `yaml:"server,omitempty"`
+	DB          *Database    `yaml:"database,omitempty"`
+	UserRoles   []string     `yaml:"user_roles,omitempty"`
+	URLServices *URLServices `yaml:"url_services,omitempty"`
 }
 
 // Server holds data for server configuration
@@ -44,5 +45,5 @@ type Database struct {
 
 //URLServices url address other services
 type URLServices struct {
-	ClientsSvcBaseURL string `yaml:"client_svc_base_url"`
+	ClientsSvcBaseURL string `yaml:"psychologist_svc_base_url,omitempty"`
 }

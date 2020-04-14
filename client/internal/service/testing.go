@@ -19,7 +19,7 @@ func testRest(t *testing.T) *restserver {
 	rest := restserver{
 		router: router,
 		logger: logrus.New(),
-		userRoles: []*UserRole{
+		userRoles: []*userRole{
 			{
 				name:     "psychologist",
 				isActive: true,

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/fgituser/management-client-psychologist.services/client/internal/config"
@@ -15,7 +16,7 @@ import (
 //Start the API server
 func Start(cfg *config.Configuration) error {
 	router := server.New()
-
+	log.Println(cfg.DB.DSN)
 	store, err := newDatabase(cfg.DB.DSN)
 	if err != nil {
 		return errors.Wrap(err, "an error occurred while start api server")
@@ -26,7 +27,9 @@ func Start(cfg *config.Configuration) error {
 		return errors.Wrap(err, "an error accured while start api server")
 	}
 
-	restServer := newRESTServer(router, store, tranportSvc)
+	uRoles := newUserRoles(cfg.UserRoles)
+
+	restServer := newRESTServer(router, store, uRoles, tranportSvc)
 
 	server.Start(restServer.router, restServer.logger, &server.Config{
 		Port:                cfg.Server.Port,
@@ -37,8 +40,16 @@ func Start(cfg *config.Configuration) error {
 	return nil
 }
 
+func newUserRoles(roles []string) []*userRole {
+	uRoles := make([]*userRole, 0)
+	for _, u := range roles {
+		uRoles = append(uRoles, &userRole{name: u, isActive: true})
+	}
+	return uRoles
+}
+
 func newDatabase(dsn string) (store.Store, error) {
-	db, err := database.New(dsn, 200) //TODO: 200 ?
+	db, err := database.New(dsn, 200)
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while initializing the database")
 	}

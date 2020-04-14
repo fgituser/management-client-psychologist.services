@@ -20,16 +20,17 @@ import (
 type restserver struct {
 	router                chi.Router
 	logger                *logrus.Logger
-	userRoles             []*UserRole
+	userRoles             []*userRole
 	store                 store.Store
 	transportPsychologist transport.Transport
 }
 
-func newRESTServer(router chi.Router, str store.Store, transportPsychologist transport.Transport) *restserver {
+func newRESTServer(router chi.Router, str store.Store, userRoles []*userRole, transportPsychologist transport.Transport) *restserver {
 	r := &restserver{
 		router:                router,
 		logger:                logrus.New(),
 		store:                 str,
+		userRoles:             userRoles,
 		transportPsychologist: transportPsychologist,
 	}
 
