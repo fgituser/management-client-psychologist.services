@@ -1,0 +1,407 @@
+swagger: "2.0"
+info:
+  description: "the is operator service"
+  version: "1.0.0"
+  title: "operatorsvc"
+  contact:
+    email: "farexy@yandex.ru"
+  license:
+    name: "MIT"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "127.0.0.1:9997"
+basePath: "/api/v1"
+tags:
+- name: "admin"
+  description: 'endpoints onli operator (admin role)'
+schemes:
+- "http"
+paths:
+  /clients/list:
+    get:
+      tags:
+      - "admin"
+      summary: "Get a list of clients: name of client, name of psychologist, assigned client"
+      description: ""
+      parameters:
+        - name: X-User-Role
+          in: header
+          description: "user role"
+          required: true
+          type: string
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            items:
+              $ref: '#/definitions/response_client_lesson_list'
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/response403"
+  /psychologist/list:
+    get:
+      tags:
+      - "admin"
+      summary: "list of psychologists and their id clients"
+      description: ""
+      parameters:
+        - name: X-User-Role
+          in: header
+          description: "user role"
+          required: true
+          type: string
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            items:
+              $ref: '#/definitions/response_psychologist_clients'
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/response403"
+  /lesson/list:
+    get:
+      tags:
+      - "admin"
+      summary: "All classes, psychologists and attached clients"
+      description: ""
+      parameters:
+        - name: X-User-Role
+          in: header
+          description: "user role"
+          required: true
+          type: string
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            items:
+              $ref: '#/definitions/response_lesson_list'
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/response403"
+  /lessons/pyschologist/{psychologist_id}/client/{client_id}/datetime/{date_time}/set:
+    post:
+      tags:
+      - "admin"
+      summary: "Assign a lesson between the client and his psychologist."
+      description: "Recording is possible at any time, including after hours of a psychologist."
+      parameters:
+        - in: header
+          name: X-User-Role
+          description: "user role"
+          required: true
+          type: string
+        - name: psychologist_id
+          in: path
+          description: "psychologist id"
+          required: true
+          type: string           
+        - name: date_time
+          in: path
+          description: "date and time lesson (URL encoding)"
+          required: true
+          type: string
+          format: date-time 
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/response403"
+  /lesson/{date_time}/psychologist/{psychologist_id}/client/{client_id}/datetime/{new_date_time}/reschedule:
+    post:
+      tags:
+      - "admin"
+      summary: "Reschedule a lesson between the client and his psychologist."
+      description: "Recording is possible at any time, including after hours of a psychologist."
+      parameters:
+        - in: header
+          name: X-User-Role
+          description: "user role"
+          required: true
+          type: string
+        - name: psychologist_id
+          in: path
+          description: "psychologist id"
+          required: true
+          type: string           
+        - name: date_time
+          in: path
+          description: "date and time lesson (URL encoding)"
+          required: true
+          type: string
+          format: date-time
+        - name: new_date_time
+          in: path
+          description: "new date and time lesson (URL encoding)"
+          required: true
+          type: string
+          format: date-time 
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/response403"
+  /lessons/client/employee/{employee_id}/dateteme/{date_time}/delete:
+    delete:
+      tags:
+      - "admin"
+      summary: "!!!NOT REALISE FROM BACKEND OPERATOR list of psychologists"
+      description: ""
+      parameters:
+        - in: header
+          name: X-User-Role
+          description: "user role"
+          required: true
+          type: string
+        - name: employee_id
+          in: path
+          description: "customer id"
+          required: true
+          type: string
+        - name: date_time
+          in: path
+          description: "date and time lesson (URL encoding)"
+          required: true
+          type: string
+          format: date-time 
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/response403"
+            
+definitions:
+  response_client_lesson_list:
+    type: object
+    properties:
+      id:
+        type: string
+        description: "client id"
+        example: "90a486-8e73-4c31-b10f-c7f24c115cdd"
+      family_name:
+        type: string
+        default: "client fmalily name"
+        example: "Garvetov"
+      name:
+        type: string
+        default: "client name"
+        example: "Sergey"
+      patronomic:
+        type: string
+        default: "client patronomic"
+        example: "Andreevich"
+      psychologist:
+        type: object
+        $ref: "#/definitions/psychologist"
+  response_psychologist_clients:
+    type: object
+    description: 'Represents the psychologist and his clients'
+    properties:
+      id:
+        type: string
+        default: "psychologist id"
+        example: "90a486-8e73-4c31-b10f-c7f24c115cdd"
+      family_name:
+        type: string
+        default: "psychologist fmalily name"
+        example: "Garvetov"
+      name:
+        type: string
+        default: "psychologist name"
+        example: "Sergey"
+      patronomic:
+        type: string
+        default: "psychologist patronomic"
+        example: "Andreevich"
+      clients:
+        type: array
+        items:
+          $ref: "#/definitions/client"
+  psychologist:
+    type: object
+    description: Presents model psychlogist
+    properties:
+      id:
+        type: string
+        default: "psychologist id"
+        example: "90a486-8e73-4c31-b10f-c7f24c115cdd"
+      family_name:
+        type: string
+        default: "psychologist fmalily name"
+        example: "Garvetov"
+      name:
+        type: string
+        default: "psychologist name"
+        example: "Sergey"
+      patronomic:
+        type: string
+        default: "psychologist patronomic"
+        example: "Andreevich"
+  lesson_list:
+    type: "object"
+    description: "Presents lesson"
+    properties:
+      date_time:
+        type: string
+        format: date-time
+        example: "2020-03-31T13:00:00Z"
+        description: "date time lesson"
+  client:
+    type: "object"
+    description: "Presents client"
+    properties:
+      id:
+        type: string
+        description: "id client"
+        example: "48faa486-8e73-4c31-b10f-c7f24c115cda"
+      family_name:
+        type: string
+        description: "family name"
+        example: "Gusev"
+      name:
+        type: string
+        description: "name"
+        example: "Evgeniy"
+      patronomic:
+        description: "pathornomic"
+        example: "Victorovich"
+        type: string
+  schedule:
+    type: object
+    description: presetnst schedule
+    properties:
+      data_time:
+        type: string
+        format: date-time
+        description: date time lesson
+        example: '2020-03-31T13:00:00+07:00'
+  request_client_list_by_id:
+    type: object
+    properties:
+      id:
+        type: string
+        description: "customet id"
+        example: "48faa486-8e73-4c31-b10f-c7f24c115cda"
+  response_employee_clients_lessons:
+    type: array
+    items:
+      properties:
+        client:
+          type: array
+          items:
+            $ref: '#/definitions/client'
+        schedule:
+          type: array
+          items:
+            $ref: '#/definitions/schedule'
+  response_lesson_list:
+    type: object
+    properties:
+      client:
+        $ref: '#/definitions/client'
+      schedule:
+        type: array
+        items:
+          properties:
+            psychologist:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: "psychologist id"
+                  example: "90a486-8e73-4c31-b10f-c7f24c115cdd"
+                family_name:
+                  type: string
+                  description: "psychologist fmalily name"
+                  example: "Garvetov"
+                name:
+                  type: string
+                  description: "psychologist name"
+                  example: "Sergey"
+                patronomic:
+                  type: string
+                  description: "psychologist patronomic"
+                  example: "Andreevich"
+            date_time:
+              type: string
+              format: date-time
+              description: "date time lesson"
+              example: "2020-03-31T13:00:00Z"
+
+                
+      
+  response_employees_list:
+    type: object
+    description: represents the subscologist and a list of his clients (identifiers)
+    properties:
+      id:
+        type: string
+        description: "psychologist id"
+        example: "90a486-8e73-4c31-b10f-c7f24c115cdd"
+      family_name:
+        type: string
+        description: "psychologist fmalily name"
+        example: "Garvetov"
+      name:
+        type: string
+        description: "psychologist name"
+        example: "Sergey"
+      patronomic:
+        type: string
+        default: "psychologist patronomic"
+        example: "Andreevich"
+      clients:
+        type: array
+        items:
+            properties:
+              id:
+                type: string
+                description: "client id"
+                example: "50faa486-8e73-4c31-b10f-c7f24c115cda"
+  response400:
+    type: "object"
+    properties:
+      error:
+        type: "string"
+        example: "a lesson can only be scheduled at the beginning of the hour"
+        description: "Error"
+  response403:
+    type: "object"
+    properties:
+      error:
+        type: "string"
+        example: "not valid X-User-Role"
+        description: "Error"

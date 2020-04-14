@@ -58,9 +58,9 @@ func (rs *restserver) configureRouter() {
 
 			rclients.Group(func(radmin chi.Router) {
 				radmin.Use(rs.checkRoleAdmin)
-				radmin.Get("/clients/list", rs.clientsList)
-				radmin.Get("/psychologist/list", rs.psychologistList)
-				radmin.Get("/lesson/list", rs.lessonList)
+				radmin.Get("/clients/list", rs.clientsList) //+
+				radmin.Get("/psychologist/list", rs.psychologistList) //+
+				radmin.Get("/lesson/list", rs.lessonList) //+
 				radmin.Post("/lessons/pyschologist/{psychologist_id}/client/{client_id}/datetime/{date_time}/set", rs.setLesson)
 				radmin.Put("/lesson/{date_time}/psychologist/{psychologist_id}/client/{client_id}/datetime/{new_date_time}/reschedule", rs.rescheduleLesson)
 			})
@@ -68,7 +68,7 @@ func (rs *restserver) configureRouter() {
 	})
 }
 
-//Reschedule an activity. The transfer is possible at any time, including after hours of the psychologist.
+///lesson/{date_time}/psychologist/{psychologist_id}/client/{client_id}/datetime/{new_date_time}/reschedule
 func (rs *restserver) rescheduleLesson(w http.ResponseWriter, r *http.Request) {
 	psychologistID := chi.URLParam(r, "psychologist_id")
 	clientID := chi.URLParam(r, "client_id")
