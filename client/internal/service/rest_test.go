@@ -13,7 +13,7 @@ import (
 func Test_restserver_clientNames(t *testing.T) {
 	rest := testRest(t)
 
-	req, err := http.NewRequest("GET", "/api/v1/client/psychologist/75d2cdd6-cf69-44e7-9b28-c47792505d81a/names", nil)
+	req, err := http.NewRequest("GET", "/api/v1/client/psychologist/75d2cdd6-cf69-44e7-9b28-c47792505d81/name", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,8 +21,8 @@ func Test_restserver_clientNames(t *testing.T) {
 	rr := httptest.NewRecorder()
 	rest.router.ServeHTTP(rr, req)
 	assert.EqualValues(t, rr.Code, 200)
-	//expected := `[{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"},{"id":"50faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Шмельцер","name":"Вячеслав","patronomic":"Николаевич"},{"id":"60faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Виевская","name":"Анастасия","patronomic":"Федоровна"}]`
-	assert.NotNil(t, rr.Body)
+	expected := []byte(`[{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"}]`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
 }
 
 func Test_isTheTime(t *testing.T) {
@@ -65,8 +65,8 @@ func Test_restserver_clientLessons(t *testing.T) {
 	rr := httptest.NewRecorder()
 	rest.router.ServeHTTP(rr, req)
 	assert.EqualValues(t, rr.Code, 200)
-	//expected := `[{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"},{"id":"50faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Шмельцер","name":"Вячеслав","patronomic":"Николаевич"},{"id":"60faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Виевская","name":"Анастасия","patronomic":"Федоровна"}]`
-	assert.NotNil(t, rr.Body)
+	expected := []byte(`[{"date_time":"2020-03-31T13:00:00Z"}]`)
+	assert.Equal(t, bytes.Trim(rr.Body.Bytes(), "\n"), expected)
 }
 
 func Test_restserver_psychologistName(t *testing.T) {
