@@ -23,6 +23,7 @@ func Load(path string) (*Configuration, error) {
 // Configuration holds data for configuring application
 type Configuration struct {
 	Server      *Server      `yaml:"server,omitempty"`
+	UserRoles   []string     `yaml:"user_roles,omitempty"`
 	URLServices *URLServices `yaml:"url_services"`
 }
 

@@ -1,1 +1,11 @@
-client_svc_base_url: "127.0.0.1:9898"
+server:
+  port: :8081
+  debug: true
+  read_timeout_seconds: 15
+  write_timeout_seconds: 20
+
+url_services:
+  client_svc_base_url: "http://clientsvc:8081/api/v1"
+  psychologist_svc_base_url: "http://psychologistsvc:8081/api/v1"
+
+user_roles: [client, admin, psychologist]

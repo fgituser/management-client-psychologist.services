@@ -23,7 +23,9 @@ func Start(cfg *config.Configuration) error {
 		return errors.Wrap(err, "an error accured while start api server")
 	}
 
-	restServer := newRESTServer(router, tranportSvcPsychologist, tranportSvcClient)
+	uRoles := newUserRoles(cfg.UserRoles)
+
+	restServer := newRESTServer(router, uRoles, tranportSvcPsychologist, tranportSvcClient)
 
 	server.Start(restServer.router, restServer.logger, &server.Config{
 		Port:                cfg.Server.Port,
@@ -32,4 +34,12 @@ func Start(cfg *config.Configuration) error {
 		Debug:               cfg.Server.Debug,
 	})
 	return nil
+}
+
+func newUserRoles(roles []string) []*userRole {
+	uRoles := make([]*userRole, 0)
+	for _, u := range roles {
+		uRoles = append(uRoles, &userRole{name: u, isActive: true})
+	}
+	return uRoles
 }

@@ -1,15 +1,7 @@
 package service
 
 //UserRole ...
-type UserRole struct {
+type userRole struct {
 	name     string
 	isActive bool
-}
-
-//NewUserRole ...
-func NewUserRole(role string, isActive bool) *UserRole {
-	return &UserRole{
-		name:     role,
-		isActive: isActive,
-	}
 }
