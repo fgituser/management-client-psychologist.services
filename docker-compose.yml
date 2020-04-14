@@ -7,14 +7,39 @@ services:
       dockerfile: psychologist/Dockerfile
     environment:
       - APP_ENV=local
+      - APP_DSN=postgres://psychologist-db/psychologist?sslmode=disable&user=postgres&password=postgres
     restart: always
-    volumes:
-      - /tmp/app:/var/log/app
     ports:
-      - 9998:9999
+      - 9998:8081
     depends_on:
       psychologist-db:
         condition: service_healthy
+
+  client-service:
+    image: clients-service
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    environment:
+      - APP_ENV=local
+      - APP_DSN=postgres://clients-db/clients?sslmode=disable&user=postgres&password=postgres
+    restart: always
+    ports:
+      - 9999:8081
+    depends_on:
+      clients-db:
+        condition: service_healthy
+
+  operator-service:
+    image: operator-service
+    build:
+      context: .
+      dockerfile: operator/Dockerfile
+    environment:
+      - APP_ENV=local
+    restart: always
+    ports:
+      - 9997:8081
 
   psychologist-db:
     image: "postgres:alpine"
@@ -30,3 +55,18 @@ services:
       retries: 5
     ports:
       - "5434:5432"
+
+  clients-db:
+    image: "postgres:alpine"
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "clients"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5436:5432"

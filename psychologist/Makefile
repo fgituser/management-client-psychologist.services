@@ -1,5 +1,5 @@
 MODULE = $(shell go list -m)
-CONFIG_FILE ?= ./configs/local.yml
+CONFIG_FILE ?= ./configs/local.yaml
 APP_DSN ?= $(shell sed -n 's/^dsn:[[:space:]]*"\(.*\)"/\1/p' $(CONFIG_FILE))
 MIGRATE := docker run -v $(shell pwd)/migrations:/migrations --network host migrate/migrate -path=/migrations/ -database "$(APP_DSN)"
 

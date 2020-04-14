@@ -14,6 +14,5 @@ fi
 echo "[`date`] Running DB migrations..."
 migrate -database "${APP_DSN}" -path ./migrations up
 
-echo ${CONFIG_FILE} ------------------------
 echo "[`date`] Starting server..."
 ./service -p ${CONFIG_FILE} 

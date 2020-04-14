@@ -1,13 +1,15 @@
 database:
   log_queries: true
   timeout_seconds: 20
-  dsn: postgres://127.0.0.1/psychologist?sslmode=disable&user=postgres&password=postgres
+  dsn: "postgres://clients-db/clients?sslmode=disable&user=postgres&password=postgres"
 
 server:
-  port: :8080
+  port: :8082
   debug: true
   read_timeout_seconds: 15
   write_timeout_seconds: 20
 
+user_roles: [client, admin, psychologist]
+
 url_services:
-  client_svc_base_url: "http://127.0.0.1"
+  client_svc_base_url: "http://clientsvc:8081/api/v1"
