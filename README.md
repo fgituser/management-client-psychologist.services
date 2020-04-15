@@ -33,7 +33,7 @@ operator-service - http://localhost:9997
 
 ### Database services (defaul)
 By default, two databases postgresql are created for the service psychologist and client 
-  
+
 psycholog - postgres://127.0.0.1/psychologist?sslmode=disable&user=postgres&password=postgres   
 
 clients - postgres://clients-db/clients?sslmode=disable&user=postgres&password=postgres
@@ -47,4 +47,9 @@ prometheus - http://localhost:9090
 > Services are pre-registered in prometheus.
 The configuration file is located in the ./configs/prometheus.yml directory
 
+### Open API Specification
 
+* [Client specification](https://github.com/fgituser/management-client-psychologist.services/blob/master/client/api/openapi-spec/swagger.yaml) 
+
+* [Psychologist specification](https://github.com/fgituser/management-client-psychologist.services/blob/develop/psychologist/api/openapi-spec/swagger.yaml)
+* [Operator specification](https://github.com/fgituser/management-client-psychologist.services/blob/develop/operator/api/openapi-spec/swagger.yaml)
