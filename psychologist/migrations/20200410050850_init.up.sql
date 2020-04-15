@@ -21,9 +21,6 @@ create table clients
             primary key,
     is_active        boolean      not null,
     client_public_id uuid         not null,
-    family_name      varchar(100) not null,
-    first_name       varchar(100) not null,
-    patronymic       varchar(100),
     employee_id      integer      not null
         constraint clients_employee_id_fkey
             references employee
