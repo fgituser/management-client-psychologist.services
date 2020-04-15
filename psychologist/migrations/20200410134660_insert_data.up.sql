@@ -30,7 +30,7 @@ c.day_id , h.id
 );
 
 -- data from clients DELETE FIO!
-INSERT INTO   clients (id, is_active, client_public_id, employee_id) VALUES (1, true, '48faa486-8e73-4c31-b10f-c7f24c115cda' 1);
+INSERT INTO   clients (id, is_active, client_public_id, employee_id) VALUES (1, true, '48faa486-8e73-4c31-b10f-c7f24c115cda', 1);
 INSERT INTO   clients (id, is_active, client_public_id, employee_id) VALUES (2, true, '50faa486-8e73-4c31-b10f-c7f24c115cda', 2);
 INSERT INTO   clients (id, is_active, client_public_id, employee_id) VALUES (3, true, '60faa486-8e73-4c31-b10f-c7f24c115cda', 1);
 
