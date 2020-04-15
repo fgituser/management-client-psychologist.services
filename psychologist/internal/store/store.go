@@ -6,7 +6,7 @@ import (
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 )
 
-//Store present store
+//Store presents databases store
 type Store interface {
 	FindClients(employeeID string) ([]*model.Client, error)
 	LessonsListByEmployeeID(employeeID string) ([]*model.Employment, error)
