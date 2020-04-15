@@ -34,9 +34,9 @@ operator-service - http://localhost:9997
 ### Database services (default)
 By default, two databases postgresql are created for the service psychologist and client 
 
-psycholog - postgres://127.0.0.1/psychologist?sslmode=disable&user=postgres&password=postgres   
+psycholog - postgres://127.0.0.1:5434/psychologist?sslmode=disable&user=postgres&password=postgres   
 
-clients - postgres://127.0.0.1/clients?sslmode=disable&user=postgres&password=postgres
+clients - postgres://127.0.0.1:5436/clients?sslmode=disable&user=postgres&password=postgres
 
 > services interact with each other on the internal network, you can change the ports for each of them, which will not affect the communication between services
 
