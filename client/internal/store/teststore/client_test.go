@@ -76,7 +76,7 @@ func TestStore_ClientsName(t *testing.T) {
 		{
 			name:    "valid",
 			s:       New(),
-			args:    args{psychologistID: "75d2cdd6-cf69-44e7-9b28-c47792505d81a"},
+			args:    args{psychologistID: "75d2cdd6-cf69-44e7-9b28-c47792505d81"},
 			want:    TestClients(t),
 			wantErr: false,
 		},

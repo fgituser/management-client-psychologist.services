@@ -16,7 +16,7 @@ services:
         condition: service_healthy
 
   client-service:
-    image: clients-service
+    image: client-service
     build:
       context: .
       dockerfile: client/Dockerfile

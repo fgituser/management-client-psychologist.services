@@ -22,9 +22,9 @@ func TestHTTPClient_PsychologistName(t *testing.T) {
 		{
 			name: "valid",
 			h: New(),
-			args: args{psychologistID: "75d2cdd6-cf69-44e7-9b28-c47792505d81", userRole: "client"},
+			args: args{psychologistID: "58faa486-8e73-4c31-b10f-c7f24c115cda", userRole: "client"},
 			want: &model.Psychologist{
-				ID:         "75d2cdd6-cf69-44e7-9b28-c47792505d81",
+				ID:         "58faa486-8e73-4c31-b10f-c7f24c115cda",
 				FamilyName: "Васкецов",
 				Name:       "Артем",
 				Patronomic: "Викторович",

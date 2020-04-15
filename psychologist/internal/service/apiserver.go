@@ -16,15 +16,17 @@ import (
 func Start(cfg *config.Configuration) error {
 	router := server.New()
 
+	tranportClientSvc, err := httpclient.New(cfg.URLServices.ClientsSvcBaseURL, "go client", &http.Client{})
+	if err != nil {
+		return errors.Wrap(err, "an error accured while start api server")
+	}
+
 	store, err := newDatabase(cfg.DB.DSN)
 	if err != nil {
 		return errors.Wrap(err, "an error occurred while start api server")
 	}
 
-	tranportClientSvc, err := httpclient.New(cfg.URLServices.ClientsSvcBaseURL, "go client", &http.Client{})
-	if err != nil {
-		return errors.Wrap(err, "an error accured while start api server")
-	}
+
 
 	uRoles := newUserRoles(cfg.UserRoles)
 

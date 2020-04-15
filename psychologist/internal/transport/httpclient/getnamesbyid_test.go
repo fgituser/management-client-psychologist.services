@@ -1,6 +1,7 @@
 package httpclient
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -16,7 +17,7 @@ func TestHTTPClient_Do(t *testing.T) {
 		assert.Equal(t, req.Header.Get("Accept"), "application/json")
 		assert.Equal(t, req.Header.Get("User-Agent"), "go client")
 		assert.Equal(t, req.Header.Get("Content-Type"), "application/json")
-		assert.Equal(t, req.Header.Get("X-Role"), "psychologist")
+		assert.Equal(t, req.Header.Get("X-User-Role"), "psychologist")
 		body, _ := TestResponseGetNamesById(t)
 		rw.Write(body)
 	}))
@@ -33,7 +34,7 @@ func TestHTTPClient_Do(t *testing.T) {
 	assert.NoError(t, err)
 
 	b, _ := TestResponseGetNamesById(t)
-	assert.NoError(t, err)
+
 	assert.Equal(t, body, b)
 }
 
@@ -125,11 +126,10 @@ func Test_encodeGetNamesByIDToRequest(t *testing.T) {
 
 func TestHTTPClient_GetNamesByID(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		// assert.Equal(t, req.URL.String(), "/psychologist/75d2cdd6-cf69-44e7-9b28-c47792505d81/clients/name")
-		// assert.Equal(t, req.Header.Get("Accept"), "application/json")
-		// assert.Equal(t, req.Header.Get("User-Agent"), "go client")
-		// assert.Equal(t, req.Header.Get("Content-Type"), "application/json")
-		// assert.Equal(t, req.Header.Get("X-Role"), "psychologist")
+		assert.Equal(t, req.URL.String(), "/client/psychologist/75d2cdd6-cf69-44e7-9b28-c47792505d81/name")
+		assert.Equal(t, req.Header.Get("Accept"), "application/json")
+		assert.Equal(t, req.Header.Get("User-Agent"), "go client")
+		assert.Equal(t, req.Header.Get("Content-Type"), "application/json")
 		body, _ := TestResponseGetNamesById(t)
 		rw.Write(body)
 	}))
@@ -144,7 +144,8 @@ func TestHTTPClient_GetNamesByID(t *testing.T) {
 	resClientsNames, err := hclient.GetNamesByID(searchingClientsID, "75d2cdd6-cf69-44e7-9b28-c47792505d81", rolePsychologist)
 	assert.NoError(t, err)
 
-	wantClientsNams := TestClients(t)
+	wanted := []byte(`[{"id":"48faa486-8e73-4c31-b10f-c7f24c115cda","family_name":"Гусев","name":"Евгений","patronomic":"Викторович"}]`)
+	res, err := json.Marshal(resClientsNames)
 	assert.NoError(t, err)
-	assert.Equal(t, resClientsNames, wantClientsNams)
+	assert.Equal(t, wanted, res)
 }

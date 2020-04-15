@@ -261,7 +261,7 @@ func (rs *restserver) checkRole(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		xrole := r.Header.Get("X-User-Role")
 		if strings.TrimSpace(xrole) == "" {
-			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
+			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - " + xrole))
 			return
 		}
 		for _, ur := range rs.userRoles {
@@ -270,7 +270,7 @@ func (rs *restserver) checkRole(next http.Handler) http.Handler {
 				return
 			}
 		}
-		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
+		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - " + xrole))
 	})
 }
 
@@ -278,7 +278,7 @@ func (rs *restserver) checkRoleAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		xrole := r.Header.Get("X-User-Role")
 		if strings.TrimSpace(xrole) != "admin" {
-			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
+			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - " + xrole))
 			return
 		}
 		for _, ur := range rs.userRoles {
@@ -287,7 +287,7 @@ func (rs *restserver) checkRoleAdmin(next http.Handler) http.Handler {
 				return
 			}
 		}
-		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role"))
+		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - " + xrole))
 	})
 }
 

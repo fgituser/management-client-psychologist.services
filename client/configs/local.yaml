@@ -4,7 +4,7 @@ database:
   dsn: "postgres://clients-db/clients?sslmode=disable&user=postgres&password=postgres"
 
 server:
-  port: :8082
+  port: :8081
   debug: true
   read_timeout_seconds: 15
   write_timeout_seconds: 20
@@ -12,4 +12,4 @@ server:
 user_roles: [client, admin, psychologist]
 
 url_services:
-  psychologist_svc_base_url: "http://psychologistsvc:8079/api/v1"
+  psychologist_svc_base_url: "http://psychologist-service:8081/api/v1"

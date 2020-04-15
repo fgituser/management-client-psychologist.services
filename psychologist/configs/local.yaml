@@ -12,4 +12,4 @@ server:
 user_roles: [client, admin, psychologist]
 
 url_services:
-  client_svc_base_url: "http://clientsvc:8081/api/v1"
+  client_svc_base_url: "http://client-service:8081/api/v1"

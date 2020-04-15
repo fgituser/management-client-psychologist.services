@@ -23,7 +23,7 @@ func TestHTTPClient_ClientLessonList(t *testing.T) {
 	}{
 		{
 			name: "valid",
-			args: args{psychologistID: "80d2cdd6-cf69-44e7-9b28-c47792505d81", clientID: "75d2cdd6-cf69-44e7-9b28-c47792505d81", userRole: "client"},
+			args: args{psychologistID: "58faa486-8e73-4c31-b10f-c7f24c115cda", clientID: "75d2cdd6-cf69-44e7-9b28-c47792505d81", userRole: "client"},
 			want: []*model.Shedule{
 				{
 					DateTime: time.Date(2020, 3, 31, 13, 0, 0, 0, time.UTC),

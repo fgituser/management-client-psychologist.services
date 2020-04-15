@@ -44,7 +44,7 @@ func (s *Store) ClientsList() ([]*model.Client, error) {
 func (s *Store) ClientsName(psychologistID string) ([]*model.Client, error) {
 
 	if strings.TrimSpace(psychologistID) != "75d2cdd6-cf69-44e7-9b28-c47792505d81" {
-		return nil, errors.New("psychologistID is empty")
+		return nil, errors.New("psychologistID is empty or not valid")
 	}
 
 	return []*model.Client{

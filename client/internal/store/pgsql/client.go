@@ -13,7 +13,7 @@ type clients struct {
 	ClientPublicID       sql.NullString `db:"client_public_id"`
 	FamilyName           sql.NullString `db:"family_name"`
 	FirstName            sql.NullString `db:"first_name"`
-	Patronomic           sql.NullString `db:"patronomic"`
+	Patronomic           sql.NullString `db:"patronymic"`
 	PsychologistPublicID sql.NullString `db:"psychologist_public_id"`
 }
 
@@ -60,7 +60,7 @@ func (s *Store) ClientsName(psychologistID string) ([]*model.Client, error) {
 
 	err := s.db.SQL.Select(&cDB, `
 	select c.client_public_id, c.family_name, c.first_name, c.patronymic from clients c 
-	where c.employee_public_id = $1`, psychologistID)
+	where c.psychologist_public_id = $1`, psychologistID)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while searching clinets")

@@ -73,7 +73,12 @@ func employeeToModelEmployee(empl []*employee) []*model.Employee {
 			FamilyName: v.FamilyName.String,
 			Name:       v.FirstName.String,
 			Patronomic: v.Patronymic.String,
-			Clients:     clients,
+			Clients: func() []*model.Client {
+				if clients != nil {
+					return clients
+				}
+				return nil
+			}(),
 		})
 	}
 
@@ -216,7 +221,7 @@ func (s *Store) LessonsListByEmployeeID(employeeID string) ([]*model.Employment,
 
 	err := s.db.SQL.Select(&allLessons, `
 	select c.client_public_id, s.calendar_id, h.start_time from employment e 
-		inner join schedule s on s.id  = e.schedule_id
+		inner join sсhedule s on s.id  = e.sсhedule_id
 		inner join clients c on c.id = e.client_id
 		inner join hours h on h.id  = s.hour_id
 		inner join employee em on em.id = s.employee_id
@@ -236,7 +241,7 @@ func (s *Store) LessonsListByEmployeeID(employeeID string) ([]*model.Employment,
 }
 
 //SetLesson Schedule an activity with your client. Recording is possible at any time, including non-working
-func (s *Store) SetLesson(employeeID, clientID string,  dateTime time.Time) error {
+func (s *Store) SetLesson(employeeID, clientID string, dateTime time.Time) error {
 	if strings.TrimSpace(employeeID) == "" || strings.TrimSpace(clientID) == "" {
 		return errors.Errorf("an error accurred while set lesson, empty parametrs employeID:%v clientID:%v", employeeID, clientID)
 	}
@@ -244,7 +249,6 @@ func (s *Store) SetLesson(employeeID, clientID string,  dateTime time.Time) erro
 	if err != nil {
 		return errors.Wrap(err, "an error accurred while set lessons")
 	}
-
 
 	tx := s.db.SQL.MustBegin()
 	_, err = tx.Exec(`insert into employment (client_id, schedule_id)
@@ -366,23 +370,21 @@ func lessonsListToEmployment(allLessons []*lessonsList) ([]*model.Employment, er
 	e := make([]*model.Employment, 0)
 	for _, a := range allLessons {
 		schedule := make([]*model.Shedule, 0)
-		for _, onelesson := range allLessons {
-			if a.ClientPublicID == onelesson.ClientPublicID {
 
-				dateTime, err := datetime.DateTimeJoiner(onelesson.CalendarID, onelesson.StartTime)
-				if err != nil {
-					return nil, errors.Wrap(err, "error transformations lessonList to Employment")
-				}
-
-				schedule = append(schedule, &model.Shedule{
-					DateTime: dateTime,
-				})
-			}
-			e = append(e, &model.Employment{
-				Client:  &model.Client{ID: a.ClientPublicID.String},
-				Shedule: schedule,
-			})
+		dateTime, err := datetime.DateTimeJoiner(a.CalendarID, a.StartTime)
+		if err != nil {
+			return nil, errors.Wrap(err, "error transformations lessonList to Employment")
 		}
+
+		schedule = append(schedule, &model.Shedule{
+			DateTime: dateTime,
+		})
+
+		e = append(e, &model.Employment{
+			Client:  &model.Client{ID: a.ClientPublicID.String},
+			Shedule: schedule,
+		})
+
 	}
 	return e, nil
 }

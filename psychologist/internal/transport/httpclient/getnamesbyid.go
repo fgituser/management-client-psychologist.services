@@ -17,7 +17,7 @@ type requestGetNamesByID struct {
 }
 
 type responseGetNamesByID struct {
-	ClinetID   string `json:"client_id"`
+	ClinetID   string `json:"id"`
 	FamilyName string `json:"family_name"`
 	Name       string `json:"name"`
 	Patronomic string `json:"patronomic"`
@@ -42,7 +42,7 @@ func (h *HTTPClient) GetNamesByID(c []*model.Client, employeeID, userRole string
 	}
 
 	res, err := h.Do(payload,
-		fmt.Sprintf("/client/psychologist/%v/names", employeeID),
+		fmt.Sprintf("/client/psychologist/%v/name", employeeID),
 		userRole)
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occured hole get name by id")
@@ -67,16 +67,17 @@ func (h *HTTPClient) Do(data []byte, url string, hrole string) ([]byte, error) {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", h.userAgent)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Role", hrole)
+	req.Header.Set("X-User-Role", hrole)
 
 	res, err := h.client.Do(req)
 	if err != nil {
+		//return nil, errors.Wrap(err2, "an error occurred while getting customer names by identifier")
 		return nil, errors.Wrap(err, "an error occurred while getting customer names by identifier")
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.Wrapf(err, "an error occured while send request, server return response code %v", res.StatusCode)
+		return nil, errors.New("an error occured while send request, server return response code: " + res.Status)
 	}
 	return ioutil.ReadAll(res.Body)
 }
@@ -87,12 +88,11 @@ func convertresponseGetNamesByIDToModelClient(resclient []*responseGetNamesByID,
 		for _, d := range resclient {
 			if cc.ID == d.ClinetID {
 				nClients = append(nClients, &model.Client{
-					ID: d.ClinetID,
+					ID:         d.ClinetID,
 					FamilyName: d.FamilyName,
-					Name: d.Name,
+					Name:       d.Name,
 					Patronomic: d.Patronomic,
 				})
-				continue
 			}
 		}
 	}
@@ -100,7 +100,7 @@ func convertresponseGetNamesByIDToModelClient(resclient []*responseGetNamesByID,
 }
 
 func decodeGetNameByID(data []byte) ([]*responseGetNamesByID, error) {
-	payload := make([]*responseGetNamesByID, 1)
+	payload := make([]*responseGetNamesByID, 0)
 	if err := json.NewDecoder(bytes.NewBuffer(data)).Decode(&payload); err != nil {
 		return nil, errors.Wrap(err, "an error occurred while decode get name by id")
 	}

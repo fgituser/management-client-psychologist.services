@@ -277,9 +277,7 @@ func (rs *restserver) lessonListByEmployeeID(w http.ResponseWriter, r *http.Requ
 			if l.Client.ID == c.ID {
 				l.Client.Name = c.Name
 				l.Client.FamilyName = c.FamilyName
-				l.Client.Patronomic = c.Patronomic
-				continue
-			}
+				l.Client.Patronomic = c.Patronomic			}
 		}
 	}
 	render.JSON(w, r, ll)

@@ -48,7 +48,7 @@ func TestStore_ClientsName(t *testing.T) {
 	defer mockDB.Close()
 	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
 
-	rows := sqlmock.NewRows([]string{"client_public_id", "family_name", "first_name", "patronomic"}).
+	rows := sqlmock.NewRows([]string{"client_public_id", "family_name", "first_name", "patronymic"}).
 		AddRow("48faa486-8e73-4c31-b10f-c7f24c115cda", "Гусев", "Евгений", "Викторович")
 	mock.ExpectQuery(`^select c.client_public_id, c.family_name, c.first_name, c.patronymic from clients c`).
 		WithArgs("75d2cdd6-cf69-44e7-9b28-c47792505d81a").
@@ -106,7 +106,7 @@ func TestStore_ClientsList(t *testing.T) {
 	defer mockDB.Close()
 	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
 
-	rows := sqlmock.NewRows([]string{"client_public_id", "family_name", "first_name", "patronomic", "psychologist_public_id"}).
+	rows := sqlmock.NewRows([]string{"client_public_id", "family_name", "first_name", "patronymic", "psychologist_public_id"}).
 		AddRow("48faa486-8e73-4c31-b10f-c7f24c115cda", "Гусев", "Евгений", "Викторович", "75d2cdd6-cf69-44e7-9b28-c47792505d81")
 	mock.ExpectQuery(`^select c.client_public_id, c.family_name, c.first_name, c.patronymic, c.psychologist_public_id`).
 		WillReturnRows(rows)
@@ -139,7 +139,7 @@ func TestStore_ClientsNames(t *testing.T) {
 	defer mockDB.Close()
 	sqlxDB := sqlx.NewDb(mockDB, "sqlmock")
 
-	rows := sqlmock.NewRows([]string{"client_public_id", "family_name", "first_name", "patronomic", "psychologist_public_id"}).
+	rows := sqlmock.NewRows([]string{"client_public_id", "family_name", "first_name", "patronymic", "psychologist_public_id"}).
 		AddRow("48faa486-8e73-4c31-b10f-c7f24c115cda", "Гусев", "Евгений", "Викторович", "75d2cdd6-cf69-44e7-9b28-c47792505d81")
 	mock.ExpectQuery(`^select c.client_public_id, c.family_name, c.first_name, c.patronymic, c.psychologist_public_id`).
 		WithArgs(pq.Array([]string{"48faa486-8e73-4c31-b10f-c7f24c115cda"})).

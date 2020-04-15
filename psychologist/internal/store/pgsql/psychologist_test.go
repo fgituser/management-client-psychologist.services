@@ -299,10 +299,9 @@ func TestStore_EmployeesNames(t *testing.T) {
 			FamilyName: "Гусев",
 			Name:       "Евгений",
 			Patronomic: "Викторович",
+			Clients:    []*model.Client{{}},
 		},
 	}
-	data, _ := json.Marshal(wanted)
-	fmt.Println(string(data))
 	assert.Equal(t, employeeList, wanted)
 }
 
