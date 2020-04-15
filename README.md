@@ -36,7 +36,7 @@ By default, two databases postgresql are created for the service psychologist an
 
 psycholog - postgres://127.0.0.1/psychologist?sslmode=disable&user=postgres&password=postgres   
 
-clients - postgres://clients-db/clients?sslmode=disable&user=postgres&password=postgres
+clients - postgres://127.0.0.1/clients?sslmode=disable&user=postgres&password=postgres
 
 > services interact with each other on the internal network, you can change the ports for each of them, which will not affect the communication between services
 
