@@ -14,6 +14,9 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/sirupsen/logrus"
+
+	chiprometheus "github.com/766b/chi-prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type restserver struct {
@@ -47,12 +50,15 @@ func (rs *restserver) configureRouter() {
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
+	metrics := chiprometheus.NewMiddleware("operator-service")
+	rs.router.Use(metrics)
 	rs.router.Use(cors.Handler)
+	rs.router.Handle("/metrics", promhttp.Handler())
+	rs.router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		render.JSON(w, r, "pong")
+		return
+	})
 	rs.router.Route("/api/v1", func(rapi chi.Router) {
-		rapi.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-			render.JSON(w, r, "pong")
-			return
-		})
 		rapi.Group(func(rclients chi.Router) {
 			rclients.Use(rs.checkRole)
 

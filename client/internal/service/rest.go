@@ -15,6 +15,9 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/sirupsen/logrus"
+
+	chiprometheus "github.com/766b/chi-prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type restserver struct {
@@ -46,12 +49,15 @@ func (rs *restserver) configureRouter() {
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
+	metrics := chiprometheus.NewMiddleware("client-service")
+	rs.router.Use(metrics)
 	rs.router.Use(cors.Handler)
+	rs.router.Handle("/metrics", promhttp.Handler())
+	rs.router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		render.JSON(w, r, "pong")
+		return
+	})
 	rs.router.Route("/api/v1", func(rapi chi.Router) {
-		rapi.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-			render.JSON(w, r, "pong")
-			return
-		})
 		rapi.Group(func(rclients chi.Router) {
 			rclients.Use(rs.checkRole)
 
@@ -261,7 +267,7 @@ func (rs *restserver) checkRole(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		xrole := r.Header.Get("X-User-Role")
 		if strings.TrimSpace(xrole) == "" {
-			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - " + xrole))
+			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - "+xrole))
 			return
 		}
 		for _, ur := range rs.userRoles {
@@ -270,7 +276,7 @@ func (rs *restserver) checkRole(next http.Handler) http.Handler {
 				return
 			}
 		}
-		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - " + xrole))
+		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - "+xrole))
 	})
 }
 
@@ -278,7 +284,7 @@ func (rs *restserver) checkRoleAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		xrole := r.Header.Get("X-User-Role")
 		if strings.TrimSpace(xrole) != "admin" {
-			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - " + xrole))
+			rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - "+xrole))
 			return
 		}
 		for _, ur := range rs.userRoles {
@@ -287,7 +293,7 @@ func (rs *restserver) checkRoleAdmin(next http.Handler) http.Handler {
 				return
 			}
 		}
-		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - " + xrole))
+		rs.sendErrorJSON(w, r, 403, ErrNoAccess, errors.New("not valid X-User-Role - "+xrole))
 	})
 }
 

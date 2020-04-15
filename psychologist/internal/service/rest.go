@@ -8,12 +8,14 @@ import (
 	"strings"
 	"time"
 
+	chiprometheus "github.com/766b/chi-prometheus"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/model"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/store"
 	"github.com/fgituser/management-client-psychologist.services/psychologist/internal/transport"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,28 +48,30 @@ func (rs *restserver) configureRouter() {
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
+	metrics := chiprometheus.NewMiddleware("psychologist-service")
+	rs.router.Use(metrics)
 	rs.router.Use(cors.Handler)
+	rs.router.Handle("/metrics", promhttp.Handler())
+	rs.router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		render.JSON(w, r, "pong")
+		return
+	})
 	rs.router.Route("/api/v1", func(rapi chi.Router) {
-		rapi.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-			rs.logger.Info("pong")
-			render.JSON(w, r, "pong")
-			return
-		})
 		rapi.Group(func(remployees chi.Router) {
 			remployees.Group(func(radmin chi.Router) {
 				radmin.Use(rs.checkRole)
 				radmin.Use(rs.checkRoleAdmin)
-				radmin.Get("/employees/list", rs.employeesList) //+
-				radmin.Get("/lessons/list", rs.lessonsList) //+
+				radmin.Get("/employees/list", rs.employeesList)            //+
+				radmin.Get("/lessons/list", rs.lessonsList)                //+
 				radmin.Post("/employees/list_by_id", rs.employeesListByID) //+
 				radmin.Delete("/lessons/client/employee/{employee_id}/dateteme/{date_time}/delete", rs.lessonDelete)
 			})
 			remployees.Use(rs.checkoEmploeeID)
 			remployees.Use(rs.checkRole)
-			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID) //+
+			remployees.Get("/employees/{employee_id}/clients/name", rs.clientsNameByEmployeeID)                     //+
 			remployees.Get("/employees/{employee_id}/client/{client_id}/lessons", rs.lessonByEmployeeIDAndClientID) //+
-			remployees.Get("/employees/{employee_id}/name", rs.employeeNameByID) //+
-			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID) //+
+			remployees.Get("/employees/{employee_id}/name", rs.employeeNameByID)                                    //+
+			remployees.Get("/employees/{employee_id}/clients/lessons", rs.lessonListByEmployeeID)                   //+
 			remployees.Group(func(remployed chi.Router) {
 				remployed.Use(rs.checkAttachment)
 				remployed.Use(rs.lessonIsBusy)
@@ -277,7 +281,8 @@ func (rs *restserver) lessonListByEmployeeID(w http.ResponseWriter, r *http.Requ
 			if l.Client.ID == c.ID {
 				l.Client.Name = c.Name
 				l.Client.FamilyName = c.FamilyName
-				l.Client.Patronomic = c.Patronomic			}
+				l.Client.Patronomic = c.Patronomic
+			}
 		}
 	}
 	render.JSON(w, r, ll)
